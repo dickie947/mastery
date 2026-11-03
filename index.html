@@ -246,8 +246,8 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 
 <script>
 /* ---------- helpers ---------- */
-/* Deliberate hours in one field. Competent is about a degree plus a few working years; the steps above it follow Nightingale's 3, 5 and 7 years at 1 h/day. Edit freely. */
-var LEVELS=[[0,"Beginner"],[1000,"Competent"],[2100,"Top of Field"],[2800,"National Authority"],[3600,"World Class"]];
+/* Deliberate hours in one field. Competent is about a degree plus a few working years; the steps above it follow Nightingale's 3, 5 and 7 years at 1 h/day. Top 20% sits at 80% of World Class. Edit freely. */
+var LEVELS=[[0,"Beginner"],[1000,"Competent"],[2100,"Top of Field"],[2800,"National Authority"],[2880,"Top 20%"],[3600,"World Class"]];
 var TARGET=LEVELS[LEVELS.length-1][0];
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function p2(n){return (n<10?"0":"")+n}
