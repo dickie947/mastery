@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MASTERY</title>
+<meta name="theme-color" content="#080B10">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MASTERY">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=VT323&display=swap">
+<style>
+/* Same visual system as ACnet: NASA graphics-standards page on top, mission-control CRT screens set into it.
+   Colour: nasa-red logo/rules, nasa-blue links, phosphor amber ticker, phosphor green console. */
+:root{
+  --bg:#080B10; --fg:#E6E9EF; --muted:#8C96A6; --rule:#232B38;
+  --red:#FC3D21; --blue:#4F7FDB; --link:#7FA8F0; --visited:#A592CC;
+  --hover:#121823; color-scheme:dark;
+  --crt-bg:#06100B; --crt-fg:#5CFFA1; --crt-dim:#2E8F5E; --crt-line:#12402A;
+  --amber-bg:#140D02; --amber:#FFB000; --amber-dim:#9A6A00; --lv:#FFB000; --lvm:#5FE39C;
+  --display:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --crt:'VT323','Courier New',monospace;
+}
+:root[data-mode="light"]{--bg:#F3F4F6; --fg:#14181F; --muted:#5B6472; --rule:#C9CED6; --blue:#0B3D91; --link:#0B3D91; --visited:#6B5A8E; --hover:#E7EAF0; --lv:#8A5A00; --lvm:#0B7A45; color-scheme:light}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--display);font-size:15px;line-height:1.35;margin:0;
+  padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
+.wrap{max-width:none;margin:0 auto}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+/* banner */
+.banner{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;
+  padding:20px 0 12px;border-bottom:4px solid var(--blue)}
+.logo{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(44px,8.5vw,68px);letter-spacing:-.025em;line-height:.95;color:var(--red);
+  background:linear-gradient(to bottom,var(--red) 0 66%,#711B0F 66% 100%) 0 0/100% .067em;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.tag{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-top:6px}
+.stamp{text-align:right;font-family:var(--crt);font-size:24px;line-height:1.05;color:var(--fg)}
+.stamp small{display:block;font-family:var(--display);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.stamp .utc{color:var(--red)}
+.btn{font-family:var(--display);font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--fg);background:none;border:1px solid var(--rule);padding:4px 10px;cursor:pointer}
+.btn:hover{background:var(--hover)}
+.stamp .btn{margin-top:8px;margin-left:4px}
+
+
+/* main */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;margin-top:20px;align-items:start}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--rule);padding-bottom:6px;margin-bottom:6px;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--muted);gap:8px}
+.sec-h b{color:var(--link)}
+.sec-h .btn{padding:2px 8px}
+.grp+.grp{margin-top:28px}
+.empty{margin:8px 6px;color:var(--muted);font-size:14px}
+.note{margin-top:22px;padding:8px 10px;border:1px dashed var(--red);font-size:12px;color:var(--muted)}
+.note b{color:var(--red)}
+
+/* skill tree */
+ol.tree,ol.tree ol{list-style:none;margin:0;padding:0}
+ol.tree ol{margin-left:1.6em;border-left:1px solid var(--rule);padding-left:8px}
+.sk{padding:7px 6px;border-radius:2px;display:grid;grid-template-columns:1.2em minmax(0,1fr);column-gap:6px}
+.sk:hover{background:var(--hover)}
+.sk.sel{background:var(--hover);box-shadow:inset 3px 0 0 var(--red)}
+.sk .tw{background:none;border:0;color:var(--muted);font-family:var(--crt);font-size:20px;line-height:1;padding:0;cursor:pointer;text-align:center;align-self:start;padding-top:1px}
+.sk .tw[disabled]{opacity:.25;cursor:default}
+.sk .nm{font-size:16px;font-weight:600;overflow-wrap:anywhere;color:var(--link);background:none;border:0;padding:0;text-align:left;cursor:pointer;font-family:var(--display)}
+.sk .nm:hover{text-decoration:underline}
+.sk.top>div>.head .nm{font-size:18px;font-weight:800}
+.ttl{display:flex;gap:4px 10px;align-items:baseline;flex-wrap:wrap;min-width:0}
+.lv{font-family:var(--crt);font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--lv);border:1px solid var(--lv);padding:0 6px;line-height:1.25;white-space:nowrap}
+.lv.l0{color:var(--muted);border-color:var(--rule)}
+.lv.lm{color:var(--lvm);border-color:var(--lvm)}
+.head{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.pct{font-family:var(--crt);font-size:22px;color:var(--fg);white-space:nowrap}
+.m{font-size:12px;color:var(--muted);margin-top:2px;overflow-wrap:anywhere}
+.m b{color:var(--fg);font-weight:600}
+.pb{position:relative;height:10px;margin-top:5px;border:1px solid var(--rule);background:var(--bg)}
+.pb i{position:absolute;inset:0 auto 0 0;display:block;background:var(--blue)}
+.pb.half i{background:var(--amber)}
+.pb.full i{background:var(--crt-fg)}
+.pb::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to right,transparent 0 calc(10% - 1px),var(--bg) calc(10% - 1px) 10%)}
+.acts{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.acts .btn{padding:2px 7px;font-size:10px}
+.acts .btn.del:hover{color:var(--red);border-color:var(--red)}
+
+/* recent sessions */
+ol.logs{list-style:none;margin:0;padding:0}
+.logs li{display:grid;grid-template-columns:5.2em minmax(0,1fr) auto auto;gap:4px 10px;padding:5px 6px;align-items:baseline;border-radius:2px}
+.logs li:hover{background:var(--hover)}
+.logs .d{font-family:var(--crt);font-size:20px;color:var(--muted)}
+.logs .s{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.logs .s small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.logs .h{font-family:var(--crt);font-size:22px;color:var(--amber);text-align:right}
+.logs .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px}
+.logs .x:hover{color:var(--red)}
+
+/* console screen */
+.screen{background:var(--crt-bg);color:var(--crt-fg);border:3px solid var(--blue);border-radius:6px;
+  font-family:var(--crt);font-size:21px;line-height:1.15;position:sticky;top:calc(12px + env(safe-area-inset-top,0px));overflow:hidden}
+.screen::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(0,0,0,.18) 0 1px,transparent 1px 3px)}
+.scr-h{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--crt-fg);color:var(--crt-bg);font-size:22px;letter-spacing:.06em}
+.scr-b{padding:10px 12px 8px}
+.blk{border-top:1px solid var(--crt-line);padding:8px 0}
+.blk:first-of-type{border-top:0;padding-top:0}
+.k{color:var(--crt-dim);font-size:17px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.screen select,.screen input{width:100%;background:var(--crt-bg);color:var(--crt-fg);border:1px solid var(--crt-dim);font-family:var(--crt);font-size:21px;padding:2px 6px;border-radius:0;
+  position:relative;z-index:1;color-scheme:dark}
+.screen input::placeholder{color:var(--crt-dim)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chips{display:flex;gap:6px;margin-top:6px;position:relative;z-index:1;flex-wrap:wrap}
+.cbtn{font-family:var(--crt);font-size:19px;color:var(--crt-fg);background:none;border:1px solid var(--crt-dim);padding:0 10px;cursor:pointer;line-height:1.3;position:relative;z-index:1}
+.cbtn:hover{background:var(--crt-line)}
+.cbtn.go{background:var(--crt-fg);color:var(--crt-bg);border-color:var(--crt-fg)}
+.cbtn.stop{background:var(--amber);color:var(--amber-bg);border-color:var(--amber)}
+.clock{font-size:46px;line-height:1;color:var(--amber);letter-spacing:.04em}
+.clock.idle{color:var(--crt-dim)}
+.kv{display:flex;justify-content:space-between}
+.kv span:last-child{color:var(--amber)}
+.foot{border-top:1px solid var(--crt-line);margin-top:6px;padding-top:6px;font-size:16px;color:var(--crt-dim);letter-spacing:.06em;display:flex;justify-content:space-between;gap:8px}
+.foot .ok{color:var(--crt-fg)} .foot .warn{color:var(--amber)} .foot .err{color:var(--red)}
+
+/* settings dialog */
+dialog{background:var(--bg);color:var(--fg);border:3px solid var(--blue);border-radius:6px;padding:0;max-width:min(520px,calc(100vw - 24px));width:100%}
+dialog::backdrop{background:rgba(0,0,0,.65)}
+dialog .in{padding:16px}
+dialog h2{margin:0 0 4px;font-size:22px;font-weight:900;color:var(--red);letter-spacing:-.01em}
+dialog p{font-size:13px;color:var(--muted);margin:6px 0 10px}
+dialog label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-top:10px}
+dialog input[type=text],dialog input[type=password]{width:100%;margin-top:3px;background:var(--bg);color:var(--fg);border:1px solid var(--rule);padding:7px 8px;font-size:15px;font-family:var(--display)}
+dialog .bar2{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+
+@media (min-width:1400px){ .cols{grid-template-columns:minmax(0,1fr) 380px} }
+@media (max-width:820px){
+  .cols{grid-template-columns:minmax(0,1fr)}
+  .screen{position:static}
+  .stamp{text-align:left}
+  .logs li{grid-template-columns:4.6em minmax(0,1fr) auto auto}
+}
+
+dialog textarea{width:100%;min-height:160px;margin-top:6px;background:var(--bg);color:var(--fg);border:1px solid var(--rule);padding:7px 8px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;resize:vertical}
+dialog select.q{width:100%;margin-top:3px;background:var(--bg);color:var(--fg);border:1px solid var(--rule);padding:8px;font-size:16px;font-family:var(--display)}
+dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);border:1px solid var(--rule);padding:8px;font-size:16px;font-family:var(--display)}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 32px);background:var(--amber-bg);color:var(--amber);border:2px solid var(--amber);padding:8px 14px;font-family:var(--crt);font-size:20px;z-index:50}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="banner">
+    <div>
+      <h1 class="logo">MASTERY</h1>
+    </div>
+    <div class="stamp">
+      <small>Date</small>
+      <span id="date">MONDAY 02 NOVEMBER 2026</span><br>
+      <span class="utc" id="clock">DAY 306 / 00:00:00 UTC</span><br>
+      <button type="button" class="btn" id="mode" aria-label="Switch colour scheme">Mode: dark</button><button type="button" class="btn" id="cfg">Sync</button>
+    </div>
+  </header>
+
+  <div class="cols">
+    <main>
+      <section class="grp">
+        <div class="sec-h"><b>SKILLS</b><span><span id="nskills">0 skills</span> &nbsp; <button type="button" class="btn" id="addTop">+ New skill</button></span></div>
+        <div id="tree"></div>
+      </section>
+      <section class="grp">
+        <div class="sec-h"><b>RECENT SESSIONS</b><span id="nlogs">0 logged</span></div>
+        <div id="recent"></div>
+      </section>
+      <p class="note" id="lvnote"></p>
+      <p class="note"><b>MASTERY.</b> A skill's hours include every sub-skill beneath it plus anything logged straight to it. Progress is measured against the World Class level, 3,600 deliberate hours in one field. Log only focused practice at the edge of your ability, not routine work or time near the subject. A skill started at a higher level carries that level's hours as a baseline.</p>
+    </main>
+
+    <aside aria-label="Log console">
+      <section class="screen" id="screen">
+        <div class="scr-h"><span>LOG CONSOLE</span><span id="sync">LOCAL</span></div>
+        <div class="scr-b">
+          <div class="blk">
+            <div class="k">Skill</div>
+            <select id="pick" aria-label="Skill to log against"></select>
+          </div>
+          <div class="blk">
+            <div class="k">Session timer</div>
+            <div class="clock idle" id="tclock">00:00:00</div>
+            <div class="chips"><button type="button" class="cbtn go" id="tgo">START</button><button type="button" class="cbtn stop" id="tstop" hidden>STOP &amp; SAVE</button><button type="button" class="cbtn" id="tdrop" hidden>DISCARD</button></div>
+          </div>
+          <div class="blk">
+            <div class="k">Log by hand</div>
+            <div class="row2">
+              <div><div class="k">Hours</div><input id="hrs" type="number" inputmode="decimal" min="0" step="0.25" placeholder="1.5"></div>
+              <div><div class="k">Date</div><input id="day" type="date"></div>
+            </div>
+            <div class="chips" id="quick"><button type="button" class="cbtn" data-h="0.25">+15m</button><button type="button" class="cbtn" data-h="0.5">+30m</button><button type="button" class="cbtn" data-h="1">+1h</button><button type="button" class="cbtn" data-h="2">+2h</button></div>
+            <div class="k" style="margin-top:8px">Note</div>
+            <input id="note" type="text" maxlength="140" placeholder="What did you work on?">
+            <div class="chips"><button type="button" class="cbtn go" id="save">LOG SESSION</button></div>
+          </div>
+          <div class="blk" id="stats"></div>
+          <div class="foot"><span id="syncmsg">LOCAL ONLY</span><span id="synct"></span></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <div class="in">
+    <h2>Sync &amp; backup</h2>
+    <p>Your log is saved on this device. Add a token and each change is also committed to <code>data/mastery.json</code> in your repo, so every device shows the same hours. The token stays in this browser and is never written to the repo.</p>
+    <label for="cOwner">GitHub user</label><input id="cOwner" type="text" autocapitalize="off" autocomplete="off" spellcheck="false">
+    <label for="cRepo">Repository</label><input id="cRepo" type="text" autocapitalize="off" autocomplete="off" spellcheck="false">
+    <label for="cTok">Fine-grained token (Contents: read and write, this repo only)</label><input id="cTok" type="password" autocomplete="off" placeholder="github_pat_...">
+    <p style="font-size:12px">A public repo makes the data file public too. Use a private repo if you'd rather it wasn't.</p>
+    <div class="bar2"><button type="button" class="btn" id="cSave">Save &amp; sync now</button></div>
+    <label for="cText">Backup text</label>
+    <textarea id="cText" spellcheck="false" aria-label="Backup text"></textarea>
+    <div class="bar2">
+      <button type="button" class="btn" id="cCopy">Copy</button>
+      <button type="button" class="btn" id="cLoad">Load from text</button>
+      <button type="button" class="btn" id="cClose">Close</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="dq">
+  <div class="in">
+    <h2 id="dqT"></h2>
+    <p id="dqP"></p>
+    <input class="q" id="dqI" type="text" maxlength="60" autocomplete="off" aria-label="Name">
+    <label for="dqS" id="dqSL" hidden>Starting level</label>
+    <select class="q" id="dqS" hidden></select>
+    <p id="dqSN" hidden></p>
+    <div class="bar2"><button type="button" class="btn" id="dqOk">OK</button><button type="button" class="btn" id="dqNo">Cancel</button></div>
+  </div>
+</dialog>
+<div class="toast" id="toast" hidden></div>
+
+
+<script>
+/* ---------- helpers ---------- */
+/* Deliberate hours in one field. Competent is about a degree plus a few working years; the steps above it follow Nightingale's 3, 5 and 7 years at 1 h/day. Edit freely. */
+var LEVELS=[[0,"Beginner"],[1000,"Competent"],[2100,"Top of Field"],[2800,"National Authority"],[3600,"World Class"]];
+var TARGET=LEVELS[LEVELS.length-1][0];
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function p2(n){return (n<10?"0":"")+n}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+function fmt(n,d){return n.toLocaleString("en-GB",{minimumFractionDigits:d||0,maximumFractionDigits:d||0})}
+function todayStr(){var d=new Date();return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())}
+function dayMs(s){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||"");return m?new Date(+m[1],+m[2]-1,+m[3]).getTime():NaN}
+
+/* ---------- colour scheme ---------- */
+(function(){
+  var root=document.documentElement, btn=document.getElementById("mode"), mode="dark";
+  var s=lsGet("mastery-mode"); if(s==="light"||s==="dark")mode=s; else if(root.getAttribute("data-theme")==="light")mode="light";
+  function apply(){root.setAttribute("data-mode",mode);btn.textContent="Mode: "+mode}
+  btn.addEventListener("click",function(){mode=mode==="dark"?"light":"dark";apply();lsSet("mastery-mode",mode)});
+  apply();
+})();
+
+/* ---------- date + clock ---------- */
+var DAYS=["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+var MONTHS=["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+function tick(){
+  var d=new Date();
+  document.getElementById("date").textContent=DAYS[d.getDay()]+" "+p2(d.getDate())+" "+MONTHS[d.getMonth()]+" "+d.getFullYear();
+  var start=Date.UTC(d.getUTCFullYear(),0,0), doy=Math.floor((Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())-start)/864e5);
+  document.getElementById("clock").textContent="DAY "+doy+" / "+p2(d.getUTCHours())+":"+p2(d.getUTCMinutes())+":"+p2(d.getUTCSeconds())+" UTC";
+  drawTimer();
+}
+
+/* ---------- data model ----------
+   { version:1, updated:ISO, skills:[{id,name,parent|null,target}], logs:[{id,skill,date:"YYYY-MM-DD",hours,note,at}] } */
+var DATA={version:1,updated:"",skills:[],logs:[]};
+var OPEN={}, SEL=null;
+try{var _o=JSON.parse(lsGet("mastery-open")||"{}"); if(_o&&typeof _o==="object")OPEN=_o}catch(e){}
+SEL=lsGet("mastery-sel");
+
+function clean(d){
+  var out={version:1,updated:(d&&d.updated)||"",skills:[],logs:[]};
+  if(!d||typeof d!=="object") return out;
+  var ids={};
+  (Array.isArray(d.skills)?d.skills:[]).forEach(function(s){
+    if(s&&s.id&&s.name&&!ids[s.id]){ids[s.id]=1;out.skills.push({id:String(s.id),name:String(s.name).slice(0,60),parent:s.parent?String(s.parent):null,target:TARGET})}
+  });
+  out.skills.forEach(function(s){if(s.parent&&!ids[s.parent])s.parent=null});
+  (Array.isArray(d.logs)?d.logs:[]).forEach(function(l){
+    var h=+l.hours;
+    if(l&&l.id&&ids[l.skill]&&h>0&&h<=24*366&&isFinite(dayMs(l.date))) out.logs.push({id:String(l.id),skill:String(l.skill),date:l.date,hours:h,note:String(l.note||"").slice(0,140),at:l.at||"",base:l.base?true:undefined});
+  });
+  return out;
+}
+function byId(){var m={};DATA.skills.forEach(function(s){m[s.id]=s});return m}
+function kids(pid){return DATA.skills.filter(function(s){return (s.parent||null)===pid}).sort(function(a,b){return a.name.localeCompare(b.name)})}
+function pathOf(id,m){var p=[],g=0;while(id&&m[id]&&g++<50){p.unshift(m[id].name);id=m[id].parent}return p}
+
+/* totals: every log counts toward its skill and all ancestors */
+function totals(){
+  var m=byId(), all={}, own={}, recent={}, cutoff=Date.now()-28*864e5;
+  DATA.skills.forEach(function(s){all[s.id]=0;own[s.id]=0;recent[s.id]=0});
+  DATA.logs.forEach(function(l){
+    own[l.skill]+=l.hours;
+    var id=l.skill,g=0,isRecent=!l.base&&dayMs(l.date)>=cutoff;
+    while(id&&m[id]&&g++<50){all[id]+=l.hours;if(isRecent)recent[id]+=l.hours;id=m[id].parent}
+  });
+  return {all:all,own:own,recent:recent};
+}
+
+/* ---------- storage + sync ---------- */
+var CFG={owner:"",repo:"",token:""}, PATH="data/mastery.json", SHA=null, pushTimer=null, pushing=false, again=false, SYNC={state:"local",msg:"LOCAL ONLY",at:""};
+(function(){
+  var host=location.hostname, parts=location.pathname.split("/").filter(Boolean);
+  if(/\.github\.io$/.test(host)){CFG.owner=host.split(".")[0];CFG.repo=parts[0]||""}
+  try{var c=JSON.parse(lsGet("mastery-cfg")||"{}"); ["owner","repo","token"].forEach(function(k){if(typeof c[k]==="string"&&c[k])CFG[k]=c[k]})}catch(e){}
+})();
+function apiUrl(){return "https://api.github.com/repos/"+encodeURIComponent(CFG.owner)+"/"+encodeURIComponent(CFG.repo)+"/contents/"+PATH}
+function hdr(){return {"Authorization":"Bearer "+CFG.token,"Accept":"application/vnd.github+json"}}
+function b64e(s){return btoa(unescape(encodeURIComponent(s)))}
+function b64d(s){return decodeURIComponent(escape(atob(s.replace(/\s/g,""))))}
+function canSync(){return !!(CFG.token&&CFG.owner&&CFG.repo)}
+function setSync(state,msg){
+  SYNC.state=state;SYNC.msg=msg;
+  if(state==="ok")SYNC.at=new Date().toISOString();
+  var el=document.getElementById("syncmsg"),hd=document.getElementById("sync");
+  el.textContent=msg;el.className=state==="ok"?"ok":state==="err"?"err":state==="wait"?"warn":"";
+  hd.textContent=state==="ok"?"SYNCED":state==="wait"?"SAVING":state==="err"?"ERROR":"LOCAL";
+  var t=document.getElementById("synct");
+  if(SYNC.at){var u=new Date(SYNC.at);t.textContent=p2(u.getUTCHours())+":"+p2(u.getUTCMinutes())+" UTC"}else t.textContent="";
+}
+function readLocal(){try{return JSON.parse(lsGet("mastery-data")||"null")}catch(e){return null}}
+function writeLocal(){lsSet("mastery-data",JSON.stringify(DATA))}
+function save(){
+  DATA.updated=new Date().toISOString();
+  writeLocal(); lsSet("mastery-dirty","1");
+  render();
+  if(canSync()){setSync("wait","SAVING…");clearTimeout(pushTimer);pushTimer=setTimeout(push,800)}
+  else setSync("local",CFG.token?"LOCAL ONLY – SET USER/REPO":"LOCAL ONLY – ADD TOKEN");
+}
+function pull(){
+  if(!canSync()){
+    return fetch(PATH+"?v="+Math.floor(Date.now()/60000),{cache:"no-store"}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});
+  }
+  return fetch(apiUrl(),{headers:hdr(),cache:"no-store"}).then(function(r){
+    if(r.status===404){SHA=null;return null}
+    if(!r.ok)throw r.status;
+    return r.json().then(function(j){SHA=j.sha;return JSON.parse(b64d(j.content))});
+  });
+}
+function push(){
+  if(!canSync())return;
+  if(pushing){again=true;return}
+  pushing=true;again=false;
+  var snap=DATA.updated, body={message:"Update practice log",content:b64e(JSON.stringify(DATA,null,1)+"\n")};
+  if(SHA)body.sha=SHA;
+  fetch(apiUrl(),{method:"PUT",headers:Object.assign({"Content-Type":"application/json"},hdr()),body:JSON.stringify(body)}).then(function(r){
+    if(r.status===409||r.status===422){ // stale sha: refetch it and retry once
+      return fetch(apiUrl(),{headers:hdr(),cache:"no-store"}).then(function(g){
+        if(g.status===404){SHA=null;return null}
+        if(!g.ok)throw g.status;
+        return g.json().then(function(j){SHA=j.sha});
+      }).then(function(){
+        if(SHA)body.sha=SHA; else delete body.sha;
+        return fetch(apiUrl(),{method:"PUT",headers:Object.assign({"Content-Type":"application/json"},hdr()),body:JSON.stringify(body)});
+      });
+    }
+    return r;
+  }).then(function(r){
+    if(!r.ok)throw r.status;
+    return r.json();
+  }).then(function(j){
+    SHA=j.content.sha;
+    if(DATA.updated===snap){lsDel("mastery-dirty");setSync("ok","SYNCED TO REPO")}
+    pushing=false; if(again||DATA.updated!==snap)push();
+  }).catch(function(e){
+    pushing=false;
+    setSync("err",e===401||e===403?"TOKEN REJECTED ("+e+")":e===404?"REPO NOT FOUND":"SYNC ERROR"+(typeof e==="number"?" ("+e+")":""));
+  });
+}
+function init(){
+  var local=readLocal(), dirty=lsGet("mastery-dirty")==="1";
+  if(local)DATA=clean(local);
+  render();
+  setSync("wait","LOADING…");
+  pull().then(function(remote){
+    if(remote&&(!dirty||!local)){DATA=clean(remote);writeLocal();lsDel("mastery-dirty");render();setSync(canSync()?"ok":"local",canSync()?"SYNCED FROM REPO":"READ-ONLY – ADD TOKEN TO SAVE")}
+    else if(dirty&&local){render();if(canSync()){setSync("wait","SAVING…");push()}else setSync("local","LOCAL ONLY – ADD TOKEN")}
+    else if(canSync()&&DATA.skills.length){push()}
+    else setSync(canSync()?"ok":"local",canSync()?"READY – NO DATA YET":"LOCAL ONLY – ADD TOKEN");
+  }).catch(function(e){
+    render();
+    setSync("err",e===401||e===403?"TOKEN REJECTED ("+e+")":e===404?"REPO NOT FOUND":"OFFLINE – USING LOCAL COPY");
+  });
+}
+
+
+/* ---------- dialogs ---------- */
+var toastT=null;
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(function(){t.hidden=true},3200)}
+var dq=document.getElementById("dq"),dqCb=null;
+function openDlg(d){if(d.showModal)d.showModal();else d.setAttribute("open","")}
+function closeDlg(d){if(d.close)d.close();else d.removeAttribute("open")}
+function ask(o,cb){
+  document.getElementById("dqT").textContent=o.title;
+  document.getElementById("dqP").textContent=o.text||"";
+  var i=document.getElementById("dqI"),ok=document.getElementById("dqOk");
+  i.hidden=!o.input;i.value=o.value||"";ok.textContent=o.ok||"OK";ok.className="btn"+(o.danger?" danger":"");
+  var sel=document.getElementById("dqS"),sl=document.getElementById("dqSL"),sn=document.getElementById("dqSN");
+  sel.hidden=sl.hidden=sn.hidden=!o.levels;
+  if(o.levels){
+    sel.innerHTML=LEVELS.map(function(l,k){return '<option value="'+k+'">'+esc(l[1])+(l[0]?' · '+fmt(l[0])+' h already logged':' · start from zero')+'</option>'}).join("");
+    sn.textContent="Choosing a level adds its hours as an opening baseline. Only pick one you have genuinely reached through deliberate practice.";
+  }
+  dqCb=cb;openDlg(dq);if(o.input)setTimeout(function(){i.focus();i.select()},50);
+}
+function dqDone(yes){var cb=dqCb;dqCb=null;closeDlg(dq);if(yes&&cb)cb(document.getElementById("dqI").value,+document.getElementById("dqS").value||0)}
+document.getElementById("dqOk").addEventListener("click",function(){dqDone(true)});
+document.getElementById("dqNo").addEventListener("click",function(){dqDone(false)});
+document.getElementById("dqI").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();dqDone(true)}});
+
+/* ---------- actions ---------- */
+function cleanName(s){return (s||"").replace(/\s+/g," ").trim().slice(0,60)}
+function addSkill(parent){
+  ask({title:parent?"New sub-skill":"New skill",text:parent?"It counts toward its parent skill too.":"Name the skill you want to build.",input:true,levels:true,ok:"Add"},function(v,lv){
+    var n=cleanName(v); if(!n)return;
+    var s={id:uid(),name:n,parent:parent||null,target:TARGET};
+    DATA.skills.push(s);
+    if(lv>0&&LEVELS[lv])DATA.logs.push({id:uid(),skill:s.id,date:todayStr(),hours:LEVELS[lv][0],note:"Starting baseline: "+LEVELS[lv][1],at:new Date().toISOString(),base:true});
+    if(parent)OPEN[parent]=true; SEL=s.id; lsSet("mastery-sel",SEL); lsSet("mastery-open",JSON.stringify(OPEN));
+    save();
+  });
+}
+function renameSkill(id){
+  var s=byId()[id]; if(!s)return;
+  ask({title:"Rename skill",input:true,value:s.name,ok:"Rename"},function(v){var n=cleanName(v);if(!n||n===s.name)return;s.name=n;save()});
+}
+function descendants(id){
+  var out=[id],i=0;
+  while(i<out.length){kids(out[i]).forEach(function(k){out.push(k.id)});i++}
+  return out;
+}
+function deleteSkill(id){
+  var s=byId()[id]; if(!s)return;
+  var ids=descendants(id), set={};ids.forEach(function(x){set[x]=1});
+  var nlog=DATA.logs.filter(function(l){return set[l.skill]}).length;
+  var msg='"'+s.name+'"'+(ids.length>1?" and its "+(ids.length-1)+" sub-skill"+(ids.length>2?"s":""):"")+' will be deleted with '+nlog+' logged session'+(nlog===1?"":"s")+". This cannot be undone.";
+  ask({title:"Delete skill?",text:msg,ok:"Delete",danger:true},function(){
+    DATA.skills=DATA.skills.filter(function(x){return !set[x.id]});
+    DATA.logs=DATA.logs.filter(function(l){return !set[l.skill]});
+    if(set[SEL]){SEL=null;lsDel("mastery-sel")}
+    save();
+  });
+}
+function addLog(skill,hours,date,note){
+  if(!skill||!(hours>0))return false;
+  DATA.logs.push({id:uid(),skill:skill,date:date||todayStr(),hours:Math.round(hours*100)/100,note:(note||"").trim().slice(0,140),at:new Date().toISOString()});
+  save(); return true;
+}
+function deleteLog(id){
+  var l=DATA.logs.filter(function(x){return x.id===id})[0]; if(!l)return;
+  ask({title:"Delete session?",text:fmt(l.hours,2)+" h on "+l.date+" will be removed.",ok:"Delete",danger:true},function(){DATA.logs=DATA.logs.filter(function(x){return x.id!==id});save()});
+}
+
+/* ---------- timer ---------- */
+var TIMER=null;
+try{TIMER=JSON.parse(lsGet("mastery-timer")||"null"); if(!TIMER||!TIMER.skill||!TIMER.start)TIMER=null}catch(e){TIMER=null}
+function drawTimer(){
+  var c=document.getElementById("tclock"),go=document.getElementById("tgo"),st=document.getElementById("tstop"),dr=document.getElementById("tdrop");
+  if(!TIMER){c.textContent="00:00:00";c.className="clock idle";go.hidden=false;st.hidden=true;dr.hidden=true;return}
+  var s=Math.max(0,Math.floor((Date.now()-TIMER.start)/1000));
+  c.textContent=p2(Math.floor(s/3600))+":"+p2(Math.floor(s%3600/60))+":"+p2(s%60);
+  c.className="clock"; go.hidden=true;st.hidden=false;dr.hidden=false;
+  var m=byId(); document.title=(m[TIMER.skill]?m[TIMER.skill].name+" ":"")+c.textContent+" · Mastery Tracker";
+}
+function startTimer(){
+  var sk=document.getElementById("pick").value; if(!sk){toast("Add a skill first, then pick it in the console.");return}
+  TIMER={skill:sk,start:Date.now()}; lsSet("mastery-timer",JSON.stringify(TIMER)); drawTimer();
+}
+function stopTimer(){
+  if(!TIMER)return;
+  var t=TIMER, hrs=(Date.now()-t.start)/36e5; TIMER=null; lsDel("mastery-timer"); document.title="Mastery Tracker"; drawTimer();
+  var m=byId(); if(!m[t.skill]){toast("That skill no longer exists, so the session was not saved.");return}
+  if(hrs<0.01){toast("Under 36 seconds, so it was not saved.");return}
+  var note=document.getElementById("note").value; document.getElementById("note").value="";
+  addLog(t.skill,hrs,todayStr(),note);
+}
+function dropTimer(){
+  if(!TIMER)return;
+  ask({title:"Discard session?",text:"The running timer will be dropped without saving.",ok:"Discard",danger:true},function(){TIMER=null;lsDel("mastery-timer");document.title="Mastery Tracker";drawTimer()});
+}
+
+/* ---------- render ---------- */
+function etaText(hours,recent,target){
+  var perWeek=recent/4; if(hours>=target)return "";
+  if(perWeek<=0)return "";
+  var weeks=(target-hours)/perWeek, yrs=weeks/52.18;
+  var s="PACE "+fmt(perWeek,1)+" H/WK";
+  if(yrs>100)return s+" · OVER 100 YRS";
+  return s+" · ~"+(yrs<1?Math.max(1,Math.round(weeks))+" WKS":fmt(yrs,1)+" YRS")+" ("+new Date(Date.now()+weeks*7*864e5).getFullYear()+")";
+}
+function levelOf(h){var i=0;for(var k=0;k<LEVELS.length;k++){if(h>=LEVELS[k][0])i=k}return {i:i,cur:LEVELS[i][1],next:LEVELS[i+1]||null}}
+function skillHTML(s,T,top,idx){
+  var h=T.all[s.id], own=T.own[s.id], tg=TARGET, pct=Math.min(100,h/tg*100);
+  var L=levelOf(h), ch=kids(s.id), open=OPEN[s.id]!==false, eta=etaText(h,T.recent[s.id],tg);
+  var cls=pct>=100?"full":pct>=50?"half":"";
+  var out='<li><div class="sk'+(top?' top':'')+(SEL===s.id?' sel':'')+'" data-id="'+s.id+'">'+
+    '<button type="button" class="tw" data-a="tw" aria-label="Expand or collapse"'+(ch.length?'':' disabled')+'>'+(ch.length?(open?'▾':'▸'):'·')+'</button>'+
+    '<div><div class="head"><span class="ttl"><button type="button" class="nm" data-a="sel">'+(top?(idx+1)+'. ':'')+esc(s.name)+'</button><span class="lv'+(L.i===0?' l0':L.i===LEVELS.length-1?' lm':'')+'">'+esc(L.cur)+'</span></span><span class="pct">'+fmt(pct,pct<10?2:1)+'%'+'</span></div>'+
+    '<div class="pb '+cls+'" role="progressbar" aria-valuemin="0" aria-valuemax="'+tg+'" aria-valuenow="'+Math.round(h)+'"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="m"><b>'+fmt(h,1)+'</b> / '+fmt(tg)+' H'+(ch.length?' · own '+fmt(own,1)+' H · '+ch.length+' sub-skill'+(ch.length>1?'s':''):'')+(L.next?' · NEXT: '+esc(L.next[1].toUpperCase())+' IN '+fmt(L.next[0]-h,1)+' H':'')+(eta?' · '+eta:'')+'</div>'+
+    '<div class="acts"><button type="button" class="btn" data-a="log">Log</button><button type="button" class="btn" data-a="sub">+ Sub-skill</button><button type="button" class="btn" data-a="ren">Rename</button><button type="button" class="btn del" data-a="del">Delete</button></div>'+
+    '</div></div>';
+  if(ch.length&&open)out+='<ol>'+ch.map(function(k){return skillHTML(k,T,false,0)}).join("")+'</ol>';
+  return out+'</li>';
+}
+function flatList(pid,depth,out){kids(pid).forEach(function(s){out.push([s,depth]);flatList(s.id,depth+1,out)});return out}
+function render(){
+  document.getElementById("lvnote").innerHTML="<b>TITLES.</b> "+LEVELS.map(function(l){return esc(l[1])+" "+fmt(l[0])+" h"}).join(" · ")+". Hours are deliberate practice in one field.";
+  var T=totals(), tops=kids(null);
+  document.getElementById("nskills").textContent=DATA.skills.length+" skill"+(DATA.skills.length===1?"":"s");
+  document.getElementById("tree").innerHTML=tops.length?'<ol class="tree">'+tops.map(function(s,i){return skillHTML(s,T,true,i)}).join("")+'</ol>'
+    :'<p class="empty">No skills yet. Add your first with “+ New skill”, then log sessions or run the timer.</p>';
+
+  // picker
+  var list=flatList(null,0,[]), pick=document.getElementById("pick"), keep=pick.value||SEL||"";
+  pick.innerHTML=list.length?list.map(function(x){return '<option value="'+x[0].id+'">'+new Array(x[1]+1).join("  ")+(x[1]?"› ":"")+esc(x[0].name)+'</option>'}).join(""):'<option value="">(no skills yet)</option>';
+  if(TIMER&&byId()[TIMER.skill])keep=TIMER.skill;
+  if(keep&&byId()[keep])pick.value=keep;
+  pick.disabled=!!TIMER;
+
+  // recent sessions
+  var m=byId(), logs=DATA.logs.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.at||"")<(a.at||"")?-1:1}).slice(0,15);
+  document.getElementById("nlogs").textContent=DATA.logs.filter(function(l){return !l.base}).length+" logged";
+  document.getElementById("recent").innerHTML=logs.length?'<ol class="logs">'+logs.map(function(l){
+    var p=pathOf(l.skill,m), d=l.date.slice(8)+" "+MONTHS[+l.date.slice(5,7)-1].slice(0,3);
+    return '<li><span class="d">'+d+'</span><span class="s">'+esc(p.join(" › "))+(l.note?'<small>'+esc(l.note)+'</small>':'')+'</span><span class="h">'+fmt(l.hours,2)+' H</span><button type="button" class="x" data-del="'+l.id+'" aria-label="Delete session">×</button></li>';
+  }).join("")+'</ol>':'<p class="empty">Nothing logged yet.</p>';
+
+  // stats + ticker
+  var today=todayStr(), t0=dayMs(today), tot=0,tdy=0,wk=0,d28=0;
+  DATA.logs.forEach(function(l){var d=dayMs(l.date);tot+=l.hours;if(l.base)return;if(l.date===today)tdy+=l.hours;if(d>t0-6*864e5)wk+=l.hours;if(d>t0-27*864e5)d28+=l.hours});
+  var days={};DATA.logs.forEach(function(l){if(!l.base)days[l.date]=1});
+  var streak=0,dd=new Date();if(!days[todayStr()])dd.setDate(dd.getDate()-1);
+  for(;;){var k=dd.getFullYear()+"-"+p2(dd.getMonth()+1)+"-"+p2(dd.getDate());if(days[k]){streak++;dd.setDate(dd.getDate()-1)}else break}
+  document.getElementById("stats").innerHTML=
+    '<div class="k">Totals</div>'+
+    '<div class="kv"><span>ALL TIME</span><span>'+fmt(tot,1)+' H</span></div>'+
+    '<div class="kv"><span>TODAY</span><span>'+fmt(tdy,1)+' H</span></div>'+
+    '<div class="kv"><span>LAST 7 DAYS</span><span>'+fmt(wk,1)+' H</span></div>'+
+    '<div class="kv"><span>28-DAY AVG</span><span>'+fmt(d28/4,1)+' H/WK</span></div>'+
+    '<div class="kv"><span>STREAK</span><span>'+streak+' DAY'+(streak===1?"":"S")+'</span></div>';
+  drawTimer();
+}
+
+/* ---------- events ---------- */
+document.getElementById("addTop").addEventListener("click",function(){addSkill(null)});
+document.getElementById("tree").addEventListener("click",function(e){
+  var b=e.target.closest("button[data-a]"); if(!b)return;
+  var id=b.closest(".sk").getAttribute("data-id"), a=b.getAttribute("data-a");
+  if(a==="tw"){OPEN[id]=OPEN[id]===false;lsSet("mastery-open",JSON.stringify(OPEN));render()}
+  else if(a==="sel"){SEL=id;lsSet("mastery-sel",id);var ch=kids(id).length;if(ch){OPEN[id]=OPEN[id]===false;lsSet("mastery-open",JSON.stringify(OPEN))}render()}
+  else if(a==="log"){SEL=id;lsSet("mastery-sel",id);render();document.getElementById("pick").value=id;var h=document.getElementById("hrs");h.focus();if(window.matchMedia("(max-width:820px)").matches)document.getElementById("screen").scrollIntoView({behavior:"smooth",block:"start"})}
+  else if(a==="sub")addSkill(id);
+  else if(a==="ren")renameSkill(id);
+  else if(a==="del")deleteSkill(id);
+});
+document.getElementById("recent").addEventListener("click",function(e){var b=e.target.closest("button[data-del]");if(b)deleteLog(b.getAttribute("data-del"))});
+document.getElementById("pick").addEventListener("change",function(){SEL=this.value;lsSet("mastery-sel",SEL);render()});
+document.getElementById("day").value=todayStr();
+document.getElementById("quick").addEventListener("click",function(e){
+  var b=e.target.closest("button[data-h]"); if(!b)return;
+  var i=document.getElementById("hrs"); i.value=Math.round(((+i.value||0)+ +b.getAttribute("data-h"))*100)/100;
+});
+document.getElementById("save").addEventListener("click",function(){
+  var sk=document.getElementById("pick").value, h=+document.getElementById("hrs").value, d=document.getElementById("day").value, n=document.getElementById("note").value;
+  if(!sk){toast("Add a skill first.");return}
+  if(!(h>0)||h>24){toast("Enter hours between 0 and 24 for one session.");return}
+  if(!isFinite(dayMs(d))||dayMs(d)>Date.now()+864e5){toast("Pick a valid date that is not in the future.");return}
+  if(addLog(sk,h,d,n)){document.getElementById("hrs").value="";document.getElementById("note").value="";document.getElementById("day").value=todayStr()}
+});
+document.getElementById("tgo").addEventListener("click",startTimer);
+document.getElementById("tstop").addEventListener("click",stopTimer);
+document.getElementById("tdrop").addEventListener("click",dropTimer);
+
+/* backup dialog */
+var dlg=document.getElementById("dlg"), cText=document.getElementById("cText");
+document.getElementById("cfg").addEventListener("click",function(){
+  cText.value=JSON.stringify(DATA,null,1);
+  document.getElementById("cOwner").value=CFG.owner;document.getElementById("cRepo").value=CFG.repo;document.getElementById("cTok").value=CFG.token;
+  openDlg(dlg);
+});
+document.getElementById("cSave").addEventListener("click",function(){
+  CFG.owner=document.getElementById("cOwner").value.trim();CFG.repo=document.getElementById("cRepo").value.trim();CFG.token=document.getElementById("cTok").value.trim();
+  lsSet("mastery-cfg",JSON.stringify(CFG)); SHA=null; closeDlg(dlg);
+  if(!canSync()){setSync("local","LOCAL ONLY – ADD TOKEN");return}
+  setSync("wait","CHECKING REPO…");
+  pull().then(function(remote){
+    var local=DATA.skills.length||DATA.logs.length, r=remote?clean(remote):null;
+    if(r&&local&&r.updated>DATA.updated){
+      ask({title:"Repo has a newer copy",text:"Use the repo copy, or overwrite it with this device?",ok:"Use repo copy"},function(){DATA=r;writeLocal();lsDel("mastery-dirty");render();setSync("ok","SYNCED FROM REPO")});
+      return;
+    }
+    if(r&&!local){DATA=r;writeLocal();lsDel("mastery-dirty");render();setSync("ok","SYNCED FROM REPO")}
+    else save();
+  }).catch(function(e){setSync("err",e===401||e===403?"TOKEN REJECTED ("+e+")":e===404?"REPO NOT FOUND":"SYNC ERROR")});
+});
+document.getElementById("cClose").addEventListener("click",function(){closeDlg(dlg)});
+document.getElementById("cCopy").addEventListener("click",function(){
+  var done=function(){toast("Copied.")}, fail=function(){cText.focus();cText.select();toast("Select and copy the text manually.")};
+  try{navigator.clipboard.writeText(cText.value).then(done,fail)}catch(e){fail()}
+});
+document.getElementById("cLoad").addEventListener("click",function(){
+  var d; try{d=clean(JSON.parse(cText.value))}catch(e){toast("That text is not a valid backup.");return}
+  if(!d.skills.length&&!d.logs.length){toast("That backup has no skills or sessions.");return}
+  closeDlg(dlg);
+  ask({title:"Replace your log?",text:"This replaces everything here with "+d.skills.length+" skills and "+d.logs.length+" sessions from the text.",ok:"Replace",danger:true},function(){DATA=d;save();toast("Backup loaded.")});
+});
+
+/* ---------- go ---------- */
+render(); tick(); setInterval(tick,1000); init();
+</script>
+
+</body>
+</html>
