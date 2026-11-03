@@ -299,7 +299,7 @@ function clean(d){
 }
 function byId(){var m={};DATA.skills.forEach(function(s){m[s.id]=s});return m}
 function groupOf(id,m){var g=0;while(id&&m[id]&&m[id].parent&&g++<50)id=m[id].parent;return m[id]&&m[id].group==="sup"?"sup":"pro"}
-var GROUPS=[["pro","PROFESSIONAL"],["sup","SUPPORTING"]];
+var GROUPS=[["pro","CORE"],["sup","SUPPORTING"]];
 function kids(pid){return DATA.skills.filter(function(s){return (s.parent||null)===pid}).sort(function(a,b){return a.name.localeCompare(b.name)})}
 function pathOf(id,m){var p=[],g=0;while(id&&m[id]&&g++<50){p.unshift(m[id].name);id=m[id].parent}return p}
 
@@ -516,7 +516,7 @@ function skillHTML(s,T,top,idx){
     '<div><div class="head"><span class="ttl"><button type="button" class="nm" data-a="sel">'+(top?(idx+1)+'. ':'')+esc(s.name)+'</button><span class="lv'+(L.i===0?' l0':L.i===LEVELS.length-1?' lm':'')+'">'+esc(L.cur)+'</span></span><span class="pct">'+fmt(pct,pct<10?2:1)+'%'+'</span></div>'+
     '<div class="pb '+cls+'" role="progressbar" aria-valuemin="0" aria-valuemax="'+tg+'" aria-valuenow="'+Math.round(h)+'"><i style="width:'+pct+'%"></i></div>'+
     '<div class="m"><b>'+fmt(h,1)+'</b> / '+fmt(tg)+' H'+(ch.length?' · own '+fmt(own,1)+' H · '+ch.length+' sub-skill'+(ch.length>1?'s':''):'')+(L.next?' · NEXT: '+esc(L.next[1].toUpperCase())+' IN '+fmt(L.next[0]-h,1)+' H':'')+(eta?' · '+eta:'')+'</div>'+
-    '<div class="acts"><button type="button" class="btn" data-a="log">Log</button><button type="button" class="btn" data-a="sub">+ Sub-skill</button><button type="button" class="btn" data-a="ren">Rename</button>'+(top?'<button type="button" class="btn" data-a="mv">'+(s.group==="sup"?"To Professional":"To Supporting")+'</button>':'')+'<button type="button" class="btn del" data-a="del">Delete</button></div>'+
+    '<div class="acts"><button type="button" class="btn" data-a="log">Log</button><button type="button" class="btn" data-a="sub">+ Sub-skill</button><button type="button" class="btn" data-a="ren">Rename</button>'+(top?'<button type="button" class="btn" data-a="mv">'+(s.group==="sup"?"To Core":"To Supporting")+'</button>':'')+'<button type="button" class="btn del" data-a="del">Delete</button></div>'+
     '</div></div>';
   if(ch.length&&open)out+='<ol>'+ch.map(function(k){return skillHTML(k,T,false,0)}).join("")+'</ol>';
   return out+'</li>';
@@ -561,7 +561,7 @@ function render(){
   document.getElementById("stats").innerHTML=
     '<div class="k">Totals</div>'+
     '<div class="kv"><span>ALL TIME</span><span>'+fmt(tot,1)+' H</span></div>'+
-    '<div class="kv"><span>PROFESSIONAL</span><span>'+fmt(gt.pro,1)+' H</span></div>'+
+    '<div class="kv"><span>CORE</span><span>'+fmt(gt.pro,1)+' H</span></div>'+
     '<div class="kv"><span>SUPPORTING</span><span>'+fmt(gt.sup,1)+' H</span></div>'+
     '<div class="kv"><span>TODAY</span><span>'+fmt(tdy,1)+' H</span></div>'+
     '<div class="kv"><span>LAST 7 DAYS</span><span>'+fmt(wk,1)+' H</span></div>'+
