@@ -149,6 +149,49 @@ dialog select.q{width:100%;margin-top:3px;background:var(--bg);color:var(--fg);b
 dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);border:1px solid var(--rule);padding:8px;font-size:16px;font-family:var(--display)}
 .btn.danger{background:var(--red);border-color:var(--red);color:#fff}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 32px);background:var(--amber-bg);color:var(--amber);border:2px solid var(--amber);padding:8px 14px;font-family:var(--crt);font-size:20px;z-index:50}
+
+/* progress chart: categorical slots 1-8 (validated order), stepped separately for each surface */
+:root{--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--s8:#e66767}
+:root[data-mode="light"]{--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#6250d6;--s8:#e34948}
+.cbar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:flex-start;justify-content:space-between;margin:2px 0 6px}
+.cchips{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1 1 320px}
+.crow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+.cgl{font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted);min-width:8em}
+.cchip{display:inline-flex;align-items:center;gap:7px;font:600 12px var(--display);color:var(--fg);background:none;border:1px solid var(--rule);padding:3px 9px;cursor:pointer;max-width:100%;text-align:left;overflow-wrap:anywhere}
+.cchip:hover:not(:disabled){background:var(--hover)}
+.cchip i{flex:none;display:inline-block;width:16px;height:0;border-top:2px solid var(--k,var(--rule))}
+.cchip[aria-pressed="false"]{color:var(--muted)}
+.cchip:disabled{opacity:.45;cursor:not-allowed}
+.cctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cctl label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-left:6px}
+.cctl select{background:var(--bg);color:var(--fg);border:1px solid var(--rule);padding:3px 6px;font:600 12px var(--display);color-scheme:inherit}
+.cwrap{position:relative;margin-top:4px}
+#csvg{display:block;width:100%;height:auto;touch-action:pan-y;outline-offset:2px}
+#csvg .gl{stroke:var(--rule);stroke-width:1;fill:none}
+#csvg .tx{fill:var(--muted);font:700 10px var(--display);letter-spacing:.08em;paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
+#csvg .tx.nh{stroke:none}
+#csvg .tx.tt{fill:var(--red)}
+#csvg .tx.dl{fill:var(--fg);font-size:11px;font-weight:600;letter-spacing:.02em}
+#csvg .td{stroke:var(--red);stroke-width:1}
+#csvg .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+#csvg .ln.dsh{stroke-dasharray:6 5}
+#csvg .mkc{stroke:var(--bg);stroke-width:2}
+#csvg .cx{stroke:var(--muted);stroke-width:1;opacity:0}
+.ctip{position:absolute;z-index:3;pointer-events:none;background:var(--bg);border:1px solid var(--rule);padding:7px 10px;font-size:12px;line-height:1.35;min-width:150px;max-width:270px;box-shadow:0 3px 10px rgba(0,0,0,.28)}
+.ctip .th{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--muted);margin-bottom:4px}
+.ctip .tr{display:grid;grid-template-columns:14px auto minmax(0,1fr);gap:6px;align-items:baseline;padding:1px 0}
+.ctip .key{display:block;height:0;border-top:2px solid var(--rule);align-self:center}
+.ctip b{font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ctip .tn{color:var(--muted);overflow-wrap:anywhere}
+.tw{overflow-x:auto;margin-top:12px;border-top:1px solid var(--rule)}
+.ft{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}
+.ft th{font:800 10px var(--display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:right;padding:7px 10px;border-bottom:1px solid var(--rule);white-space:nowrap;vertical-align:bottom}
+.ft th small{display:block;font-weight:600;letter-spacing:.06em;margin-top:1px}
+.ft td{padding:6px 10px;text-align:right;white-space:nowrap}
+.ft th:first-child,.ft td:first-child{text-align:left;position:sticky;left:0;background:var(--bg)}
+.ft tbody tr:hover td{background:var(--hover)}
+.ft td.ok{color:var(--lvm);font-weight:700;letter-spacing:.06em;font-size:11px}
+.ft .key{display:inline-block;width:16px;border-top:2px solid var(--k);vertical-align:middle;margin-right:8px}
 </style>
 </head>
 <body>
@@ -169,6 +212,24 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
   <div class="cols">
     <main>
       <div id="tree"></div>
+      <section class="grp" id="progress">
+        <div class="sec-h"><b>PROGRESS</b><span id="cmeta"></span></div>
+        <div class="cbar">
+          <div class="cchips" id="cchips" role="group" aria-label="Skills shown on the chart"></div>
+          <div class="cctl">
+            <button type="button" class="btn" data-q="top">Top-level</button><button type="button" class="btn" data-q="all">All</button><button type="button" class="btn" data-q="none">None</button>
+            <label for="cyrs">Look ahead</label>
+            <select id="cyrs"><option value="1">1 year</option><option value="2">2 years</option><option value="3">3 years</option><option value="5">5 years</option><option value="10">10 years</option><option value="20">20 years</option><option value="40">40 years</option></select>
+          </div>
+        </div>
+        <div class="cwrap" id="cwrap">
+          <svg id="csvg" tabindex="0" role="group" aria-label="Logged and projected hours per skill"></svg>
+          <div class="ctip" id="ctip" hidden></div>
+        </div>
+        <p class="empty" id="cmsg" hidden></p>
+        <div class="tw"><table class="ft" id="ftab" aria-label="Predicted date each level is reached"></table></div>
+        <p class="note"><b>HOW TO READ IT.</b> Solid line: hours you have logged. Dashed line: where you land if you keep your average pace since you first practised, using logged hours only (starting baselines are not counted as pace, and the window is never shorter than 28 days). Dots: the predicted month each level is reached. Treat the dates as rough, because pace changes and a few weeks of data say little.</p>
+      </section>
       <section class="grp">
         <div class="sec-h"><b>RECENT SESSIONS</b><span id="nlogs">0 logged</span></div>
         <div id="recent"></div>
@@ -568,7 +629,265 @@ function render(){
     '<div class="kv"><span>28-DAY AVG</span><span>'+fmt(d28/4,1)+' H/WK</span></div>'+
     '<div class="kv"><span>STREAK</span><span>'+streak+' DAY'+(streak===1?"":"S")+'</span></div>';
   drawTimer();
+  drawChart();
 }
+
+/* ---------- progress chart: logged hours (solid) and projection (dashed) per skill ---------- */
+var CH={vis:{},slot:{},yrs:5}, CH_MAX=8, CH_VIEW=null, CH_KD=null, CH_W=0;
+try{var _c=JSON.parse(lsGet("mastery-chart")||"{}");if(_c&&typeof _c==="object"){if(_c.vis&&typeof _c.vis==="object")CH.vis=_c.vis;if(_c.slot&&typeof _c.slot==="object")CH.slot=_c.slot;if([1,2,3,5,10,20,40].indexOf(+_c.yrs)>=0)CH.yrs=+_c.yrs}}catch(e){}
+function chSave(){lsSet("mastery-chart",JSON.stringify(CH))}
+function gid(i){return document.getElementById(i)}
+function dnum(s){var m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s||"");return m?Date.UTC(+m[1],+m[2]-1,+m[3])/864e5:NaN}
+function dMon(n){var d=new Date(n*864e5);return MONTHS[d.getUTCMonth()].slice(0,3)+" "+d.getUTCFullYear()}
+function dFull(n){var d=new Date(n*864e5);return p2(d.getUTCDate())+" "+MONTHS[d.getUTCMonth()].slice(0,3)+" "+d.getUTCFullYear()}
+function svgEl(n,a){var e=document.createElementNS("http://www.w3.org/2000/svg",n);for(var k in a)e.setAttribute(k,a[k]);return e}
+function htmlEl(n,cls,txt){var e=document.createElement(n);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function chOrder(){
+  var out=[],tops=kids(null);
+  GROUPS.forEach(function(g){tops.filter(function(x){return (x.group==="sup"?"sup":"pro")===g[0]}).forEach(function(x){
+    out.push([x,0,g[0]]);flatList(x.id,1,[]).forEach(function(r){out.push([r[0],r[1],g[0]])});
+  })});
+  return out;
+}
+function chVisible(order){
+  var vis=[];
+  order.forEach(function(r){var id=r[0].id,on=(id in CH.vis)?!!CH.vis[id]:r[1]===0;if(on&&vis.length<CH_MAX)vis.push(id)});
+  return vis;
+}
+/* colour follows the skill: each keeps its slot, and only moves if two visible skills collide */
+function chSlots(ids){
+  var used={},changed=false;
+  ids.forEach(function(id){var p=CH.slot[id];if(typeof p==="number"&&p>=0&&p<CH_MAX&&p%1===0&&!used[p])used[p]=1;else{CH.slot[id]=-1}});
+  ids.forEach(function(id){if(CH.slot[id]===-1){for(var k=0;k<CH_MAX;k++){if(!used[k]){used[k]=1;CH.slot[id]=k;changed=true;break}}}});
+  if(changed)chSave();
+}
+function chData(id,T0){
+  var set={};descendants(id).forEach(function(x){set[x]=1});
+  var L=[];DATA.logs.forEach(function(l){if(set[l.skill]){var d=dnum(l.date);if(isFinite(d))L.push({d:Math.min(d,T0),h:l.hours,b:!!l.base})}});
+  if(!L.length)return null;
+  L.sort(function(a,b){return a.d-b.d});
+  var pts=[],cum=0,rh=0,first=null;
+  L.forEach(function(l){cum+=l.h;if(!l.b){rh+=l.h;if(first===null)first=l.d}var p=pts[pts.length-1];if(p&&p.d===l.d)p.h=cum;else pts.push({d:l.d,h:cum})});
+  /* pace: logged hours (baselines excluded) over the days since first real practice, never less than a 28-day window */
+  var rate=first===null?0:rh/Math.max(28,T0-first+1);
+  return {pts:pts,total:cum,start:pts[0].d,rate:rate};
+}
+function chAt(D,d,T0){
+  if(!D)return null;
+  if(d>T0)return Math.max(D.total,Math.min(TARGET,D.total+D.rate*(d-T0)));
+  if(d<D.start)return null;
+  var v=null;for(var i=0;i<D.pts.length;i++){if(D.pts[i].d<=d)v=D.pts[i].h;else break}
+  return v;
+}
+function chTicks(xmin,xmax,W){
+  var months=(xmax-xmin)/30.44,steps=[1,3,6,12,24,60,120],step=120,maxN=Math.max(3,Math.floor(W/84));
+  for(var i=0;i<steps.length;i++){if(months/steps[i]<=maxN){step=steps[i];break}}
+  var d0=new Date(xmin*864e5),n=Math.floor((d0.getUTCFullYear()*12+d0.getUTCMonth())/step)*step,out=[];
+  for(var guard=0;guard<80;guard++,n+=step){
+    var y=Math.floor(n/12),m=n%12,d=Date.UTC(y,m,1)/864e5;
+    if(d>xmax)break; if(d<xmin)continue;
+    out.push([d,step<12?MONTHS[m].slice(0,3)+" "+String(y).slice(2):String(y)]);
+  }
+  return out;
+}
+function chBuildChips(order,vis,M){
+  var box=gid("cchips");box.textContent="";var rows={};
+  order.forEach(function(r){
+    var s=r[0],g=r[2];
+    if(!rows[g]){var row=htmlEl("div","crow");row.appendChild(htmlEl("span","cgl",g==="sup"?"SUPPORTING":"CORE"));box.appendChild(row);rows[g]=row}
+    var on=vis.indexOf(s.id)>=0,b=htmlEl("button","cchip");
+    b.type="button";b.setAttribute("aria-pressed",on?"true":"false");b.setAttribute("data-id",s.id);
+    if(on)b.style.setProperty("--k","var(--s"+(CH.slot[s.id]+1)+")");
+    if(!on&&vis.length>=CH_MAX){b.disabled=true;b.title="Up to "+CH_MAX+" lines at once. Turn one off first."}
+    b.appendChild(htmlEl("i"));
+    b.appendChild(document.createTextNode(r[1]&&M[s.parent]?M[s.parent].name+" › "+s.name:s.name));
+    rows[g].appendChild(b);
+  });
+}
+function chBuildTable(vis,data,M,T0){
+  var t=gid("ftab");t.textContent="";
+  var hr=htmlEl("tr");
+  ["Skill","Hours","Pace"].forEach(function(h){hr.appendChild(htmlEl("th",null,h))});
+  LEVELS.slice(1).forEach(function(l){var th=htmlEl("th",null,l[1]);th.appendChild(htmlEl("small",null,fmt(l[0])+" H"));hr.appendChild(th)});
+  var hd=htmlEl("thead");hd.appendChild(hr);t.appendChild(hd);
+  var tb=htmlEl("tbody");
+  vis.forEach(function(id){
+    var D=data[id],s=M[id],tr=htmlEl("tr"),c=htmlEl("td");
+    var k=htmlEl("i","key");k.style.setProperty("--k","var(--s"+(CH.slot[id]+1)+")");c.appendChild(k);
+    c.appendChild(document.createTextNode(s.parent&&M[s.parent]?M[s.parent].name+" › "+s.name:s.name));tr.appendChild(c);
+    tr.appendChild(htmlEl("td",null,D?fmt(D.total,1):"–"));
+    tr.appendChild(htmlEl("td",null,D&&D.rate>0?fmt(D.rate*7,1)+" H/WK":"–"));
+    LEVELS.slice(1).forEach(function(l){
+      var td=htmlEl("td");
+      if(D&&D.total>=l[0]){td.textContent="REACHED";td.className="ok"}
+      else if(D&&D.rate>0){var d=T0+(l[0]-D.total)/D.rate;td.textContent=(d-T0)/365.25>100?">100 YRS":dMon(d)}
+      else td.textContent="–";
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+}
+function chHi(m){var V=CH_VIEW;if(!V)return;V.mk.forEach(function(x){x.el.setAttribute("r",x===m?6.5:4.5)})}
+function chRow(tip,slot,val,name){
+  var r=htmlEl("div","tr"),k=htmlEl("i","key");k.style.borderTopColor="var(--s"+(slot+1)+")";
+  r.appendChild(k);r.appendChild(htmlEl("b",null,val));r.appendChild(htmlEl("span","tn",name));tip.appendChild(r);
+}
+function chPlaceTip(px,py){
+  var V=CH_VIEW,tip=gid("ctip"),wrap=gid("cwrap"),r=gid("csvg").getBoundingClientRect(),k=r.width/V.W,cx=px*k,cy=py*k;
+  tip.hidden=false;
+  var tw=tip.offsetWidth,th=tip.offsetHeight,ww=wrap.clientWidth,x=cx+14;
+  if(x+tw>ww)x=cx-14-tw;
+  if(x<0)x=Math.max(0,Math.min(ww-tw,cx-tw/2));
+  tip.style.left=x+"px";tip.style.top=Math.max(0,Math.min(r.height-th,cy-th/2))+"px";
+}
+function chHide(){var V=CH_VIEW;gid("ctip").hidden=true;if(V){V.cx.style.opacity=0;chHi(null)}}
+function chShowDay(d,px,py){
+  var V=CH_VIEW;if(!V||!V.ids.length)return;
+  d=Math.max(V.xmin,Math.min(V.xmax,d));CH_KD=d;
+  var tip=gid("ctip");tip.textContent="";
+  tip.appendChild(htmlEl("div","th",dFull(d)+(d>V.T0?" · PROJECTED":"")));
+  var rows=[];V.ids.forEach(function(id){var v=chAt(V.data[id],d,V.T0);if(v!==null)rows.push([id,v])});
+  rows.sort(function(a,b){return b[1]-a[1]});
+  if(!rows.length)tip.appendChild(htmlEl("div","tn","Before the first session"));
+  rows.forEach(function(r){chRow(tip,CH.slot[r[0]],fmt(r[1],r[1]<100?1:0)+" H",V.names[r[0]])});
+  V.cx.setAttribute("x1",V.X(d));V.cx.setAttribute("x2",V.X(d));V.cx.style.opacity=1;
+  chHi(null);chPlaceTip(px==null?V.X(d):px,py==null?V.TP+V.ph/2:py);
+}
+function chShowMk(m){
+  var V=CH_VIEW,tip=gid("ctip");tip.textContent="";
+  tip.appendChild(htmlEl("div","th",V.names[m.id]));
+  var r=htmlEl("div","tr"),k=htmlEl("i","key");k.style.borderTopColor="var(--s"+(CH.slot[m.id]+1)+")";
+  r.appendChild(k);r.appendChild(htmlEl("b",null,dFull(m.d)));r.appendChild(htmlEl("span","tn",m.level+" · "+fmt(m.h)+" H"));tip.appendChild(r);
+  V.cx.setAttribute("x1",m.x);V.cx.setAttribute("x2",m.x);V.cx.style.opacity=1;
+  chHi(m);chPlaceTip(m.x,m.y);
+}
+function chPointer(e){
+  var V=CH_VIEW;if(!V||!V.ids.length)return;
+  var r=gid("csvg").getBoundingClientRect(),k=V.W/r.width,px=(e.clientX-r.left)*k,py=(e.clientY-r.top)*k;
+  if(px<V.L-2||px>V.W-V.R+2){chHide();return}
+  var best=null,bd=18;
+  V.mk.forEach(function(m){var dd=Math.sqrt((m.x-px)*(m.x-px)+(m.y-py)*(m.y-py));if(dd<bd){bd=dd;best=m}});
+  if(best)chShowMk(best);
+  else chShowDay(Math.round(V.xmin+(px-V.L)/V.pw*(V.xmax-V.xmin)),px,py);
+}
+function drawChart(){
+  var wrap=gid("cwrap"),svg=gid("csvg");if(!wrap||!svg)return;
+  var M=byId(),order=chOrder(),vis=chVisible(order),T0=dnum(todayStr());
+  chSlots(vis);chBuildChips(order,vis,M);
+  gid("cyrs").value=String(CH.yrs);
+  gid("cmeta").textContent=vis.length+" of "+order.length+" skill"+(order.length===1?"":"s")+" shown";
+  var data={},ids=[];
+  vis.forEach(function(id){var D=chData(id,T0);data[id]=D;if(D)ids.push(id)});
+  chBuildTable(vis,data,M,T0);
+  var msg=gid("cmsg");
+  if(!ids.length){
+    svg.style.display="none";gid("ctip").hidden=true;CH_VIEW=null;
+    msg.hidden=false;msg.textContent=!order.length?"Add a skill and log a session to see your progress here.":!vis.length?"Turn on at least one skill above.":"No sessions logged for the selected skills yet.";
+    return;
+  }
+  msg.hidden=true;svg.style.display="block";
+  var W=Math.max(300,Math.round(wrap.clientWidth)||640),H=W<560?320:400;CH_W=Math.round(wrap.clientWidth);
+  var L=10,R=14,TP=26,B=28,pw=W-L-R,ph=H-TP-B,YM=TARGET*1.06;
+  var xmin=T0-14,xmax=T0+CH.yrs*365.25;
+  ids.forEach(function(id){xmin=Math.min(xmin,data[id].start)});
+  var X=function(d){return L+(d-xmin)/(xmax-xmin)*pw},Y=function(h){return TP+(1-Math.min(h,YM)/YM)*ph};
+  while(svg.firstChild)svg.removeChild(svg.firstChild);
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+  var P=function(n){svg.appendChild(n);return n};
+  // level gridlines (solid hairlines)
+  LEVELS.forEach(function(lv,i){if(i){var y=Y(lv[0]);P(svgEl("line",{x1:L,x2:W-R,y1:y,y2:y,"class":"gl"}))}});
+  P(svgEl("line",{x1:L,x2:W-R,y1:Y(0),y2:Y(0),"class":"gl ax"}));
+  // x axis
+  var lastLX=-99;
+  chTicks(xmin,xmax,W).forEach(function(t){
+    var x=X(t[0]);P(svgEl("line",{x1:x,x2:x,y1:Y(0),y2:Y(0)+4,"class":"gl ax"}));
+    if(x-lastLX>=46&&x<W-20){var tx=P(svgEl("text",{x:x,y:H-8,"text-anchor":"middle","class":"tx nh"}));tx.textContent=t[1];lastLX=x}
+  });
+  // today
+  var xt=X(T0);P(svgEl("line",{x1:xt,x2:xt,y1:TP-6,y2:Y(0),"class":"td"}));
+  var tt=P(svgEl("text",{x:xt,y:TP-10,"text-anchor":xt<34?"start":xt>W-34?"end":"middle","class":"tx tt nh"}));tt.textContent="TODAY";
+  // series: solid = logged (steps up on each practice day), dashed = projection at average pace
+  var mk=[],ends=[];
+  var names={};vis.forEach(function(id){var s=M[id];names[id]=s.parent&&M[s.parent]?M[s.parent].name+" › "+s.name:s.name});
+  ids.forEach(function(id){
+    var D=data[id],col="var(--s"+(CH.slot[id]+1)+")",p=D.pts;
+    var d="M"+X(D.start)+" "+Y(0)+" V"+Y(p[0].h);
+    for(var i=1;i<p.length;i++)d+=" H"+X(p[i].d)+" V"+Y(p[i].h);
+    d+=" H"+X(T0);
+    P(svgEl("path",{d:d,"class":"ln",style:"stroke:"+col}));
+    var ex=X(T0),ey=Y(D.total);
+    if(D.rate>0&&D.total<TARGET){
+      var dEnd=Math.min(xmax,T0+(TARGET-D.total)/D.rate),yEnd=D.total+D.rate*(dEnd-T0);
+      P(svgEl("path",{d:"M"+X(T0)+" "+Y(D.total)+" L"+X(dEnd)+" "+Y(yEnd),"class":"ln dsh",style:"stroke:"+col}));
+      ex=X(dEnd);ey=Y(yEnd);
+    }
+    ends.push({id:id,x:ex,y:ey});
+  });
+  ids.forEach(function(id){
+    var D=data[id],col="var(--s"+(CH.slot[id]+1)+")";
+    if(!(D.rate>0))return;
+    LEVELS.forEach(function(lv,i){
+      if(!i||lv[0]<=D.total)return;
+      var d=T0+(lv[0]-D.total)/D.rate;if(d>xmax+0.5)return;
+      var el=P(svgEl("circle",{cx:X(d),cy:Y(lv[0]),r:4.5,"class":"mkc",style:"fill:"+col}));
+      mk.push({id:id,x:X(d),y:Y(lv[0]),d:d,level:lv[1],h:lv[0],el:el});
+    });
+  });
+  // level names (drawn last, with a surface halo so lines never hide them)
+  LEVELS.forEach(function(lv,i){
+    if(!i)return;var nx=LEVELS[i+1],below=nx&&nx[0]-lv[0]<150;
+    var t=P(svgEl("text",{x:L+4,y:Y(lv[0])+(below?11:-4),"class":"tx"}));t.textContent=lv[1].toUpperCase()+" · "+fmt(lv[0])+" H";
+  });
+  // direct labels at line ends for up to 4 lines; any that would collide are left to the legend and tooltip
+  if(ids.length<=4){
+    var placed=[];
+    ends.slice().sort(function(a,b){return a.y-b.y}).forEach(function(e){
+      var nm=names[e.id];if(nm.length>26)nm=nm.slice(0,25)+"…";
+      var w=nm.length*6.4+4,right=e.x>W-R-w-14,x=right?e.x-6:e.x+8,y=right?e.y-9:e.y+4,x0=right?x-w:x;
+      var box={a:x0,b:x0+w,c:y-11,d:y+3},hit=placed.some(function(q){return box.a<q.b&&box.b>q.a&&box.c<q.d&&box.d>q.c});
+      if(hit||x0<L||x0+w>W)return;placed.push(box);
+      var t=P(svgEl("text",{x:x,y:y,"text-anchor":right?"end":"start","class":"tx dl"}));t.textContent=nm;
+    });
+  }
+  var cx=P(svgEl("line",{x1:0,x2:0,y1:TP-6,y2:Y(0),"class":"cx"}));
+  CH_VIEW={W:W,H:H,L:L,R:R,TP:TP,pw:pw,ph:ph,xmin:xmin,xmax:xmax,T0:T0,X:X,Y:Y,ids:ids,data:data,names:names,mk:mk,cx:cx};
+  svg.setAttribute("aria-label","Logged and projected hours for "+ids.length+" skill"+(ids.length===1?"":"s")+". The forecast table below has the same information.");
+}
+(function(){
+  var svg=gid("csvg");
+  ["pointermove","pointerdown"].forEach(function(ev){svg.addEventListener(ev,chPointer)});
+  svg.addEventListener("pointerleave",function(e){if(e.pointerType!=="touch")chHide()});
+  svg.addEventListener("blur",chHide);
+  svg.addEventListener("keydown",function(e){
+    var V=CH_VIEW;if(!V)return;
+    if(e.key==="Escape"){chHide();return}
+    if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;
+    e.preventDefault();var step=e.shiftKey?30:7,d=(CH_KD==null?V.T0:CH_KD)+(e.key==="ArrowRight"?step:-step);
+    chShowDay(d);
+  });
+  gid("cchips").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-id]");if(!b||b.disabled)return;
+    var order=chOrder(),vis=chVisible(order),id=b.getAttribute("data-id"),on=vis.indexOf(id)>=0;
+    if(!on&&vis.length>=CH_MAX){toast("Up to "+CH_MAX+" lines at once. Turn one off first.");return}
+    order.forEach(function(r){CH.vis[r[0].id]=vis.indexOf(r[0].id)>=0});
+    CH.vis[id]=!on;chSave();drawChart();
+  });
+  document.querySelector(".cctl").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-q]");if(!b)return;
+    var q=b.getAttribute("data-q"),order=chOrder(),n=0,cut=false;
+    order.forEach(function(r){
+      var on=q==="all"?true:q==="top"?r[1]===0:false;
+      if(on){if(n<CH_MAX)n++;else{on=false;cut=true}}
+      CH.vis[r[0].id]=on;
+    });
+    chSave();drawChart();
+    if(cut)toast("Showing the first "+CH_MAX+" skills. The chart holds up to "+CH_MAX+" lines.");
+  });
+  gid("cyrs").addEventListener("change",function(){CH.yrs=+this.value||5;chSave();drawChart()});
+  if(window.ResizeObserver){new ResizeObserver(function(){var w=gid("cwrap");if(w&&Math.round(w.clientWidth)!==CH_W)drawChart()}).observe(gid("cwrap"))}
+  else window.addEventListener("resize",function(){drawChart()});
+})();
 
 /* ---------- events ---------- */
 document.getElementById("tree").addEventListener("click",function(e){
