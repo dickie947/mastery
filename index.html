@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MASTERY</title>
+<title>ACmetrics</title>
 <meta name="theme-color" content="#080B10">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="MASTERY">
+<meta name="apple-mobile-web-app-title" content="ACmetrics">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=VT323&display=swap">
 <style>
@@ -199,7 +199,7 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 <div class="wrap">
   <header class="banner">
     <div>
-      <h1 class="logo">MASTERY</h1>
+      <h1 class="logo">ACmetrics</h1>
     </div>
     <div class="stamp">
       <small>Date</small>
@@ -235,7 +235,7 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
         <div id="recent"></div>
       </section>
       <p class="note" id="lvnote"></p>
-      <p class="note"><b>MASTERY.</b> A skill's hours include every sub-skill beneath it plus anything logged straight to it. Progress is measured against the World Class level, 3,600 deliberate hours in one field. Log only focused practice at the edge of your ability, not routine work or time near the subject. A skill started at a higher level carries that level's hours as a baseline.</p>
+      <p class="note"><b>ACmetrics.</b> A skill's hours include every sub-skill beneath it plus anything logged straight to it. Progress is measured against the World Class level, 3,600 deliberate hours in one field. Log only focused practice at the edge of your ability, not routine work or time near the subject. A skill started at a higher level carries that level's hours as a baseline.</p>
     </main>
 
     <aside aria-label="Log console">
@@ -539,7 +539,7 @@ function drawTimer(){
   var s=Math.max(0,Math.floor((Date.now()-TIMER.start)/1000));
   c.textContent=p2(Math.floor(s/3600))+":"+p2(Math.floor(s%3600/60))+":"+p2(s%60);
   c.className="clock"; go.hidden=true;st.hidden=false;dr.hidden=false;
-  var m=byId(); document.title=(m[TIMER.skill]?m[TIMER.skill].name+" ":"")+c.textContent+" · Mastery Tracker";
+  var m=byId(); document.title=(m[TIMER.skill]?m[TIMER.skill].name+" ":"")+c.textContent+" · ACmetrics";
 }
 function startTimer(){
   var sk=document.getElementById("pick").value; if(!sk){toast("Add a skill first, then pick it in the console.");return}
@@ -547,7 +547,7 @@ function startTimer(){
 }
 function stopTimer(){
   if(!TIMER)return;
-  var t=TIMER, hrs=(Date.now()-t.start)/36e5; TIMER=null; lsDel("mastery-timer"); document.title="Mastery Tracker"; drawTimer();
+  var t=TIMER, hrs=(Date.now()-t.start)/36e5; TIMER=null; lsDel("mastery-timer"); document.title="ACmetrics"; drawTimer();
   var m=byId(); if(!m[t.skill]){toast("That skill no longer exists, so the session was not saved.");return}
   if(hrs<0.01){toast("Under 36 seconds, so it was not saved.");return}
   var note=document.getElementById("note").value; document.getElementById("note").value="";
@@ -555,7 +555,7 @@ function stopTimer(){
 }
 function dropTimer(){
   if(!TIMER)return;
-  ask({title:"Discard session?",text:"The running timer will be dropped without saving.",ok:"Discard",danger:true},function(){TIMER=null;lsDel("mastery-timer");document.title="Mastery Tracker";drawTimer()});
+  ask({title:"Discard session?",text:"The running timer will be dropped without saving.",ok:"Discard",danger:true},function(){TIMER=null;lsDel("mastery-timer");document.title="ACmetrics";drawTimer()});
 }
 
 /* ---------- render ---------- */
