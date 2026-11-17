@@ -232,6 +232,16 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 .mch .ld{fill:none;stroke-width:1;opacity:.7}
 .mch .tx.dl{fill:var(--fg);font-weight:600;letter-spacing:.01em}
 .mch .ln{stroke:none}
+
+/* pages */
+.pages{display:flex;gap:0;border-bottom:1px solid var(--rule);margin-top:2px}
+.pages button{font:800 12px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;padding:12px 16px 9px;cursor:pointer}
+.pages button:hover{background:var(--hover)}
+.pages button[aria-current="page"]{color:var(--fg);border-bottom-color:var(--red)}
+.wrap[data-page="m"] .ps{display:none}
+.wrap[data-page="s"] .pm{display:none}
+.wrap[data-page="m"] .cols{grid-template-columns:minmax(0,1fr)}
+.mgrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
 </style>
 </head>
 <body>
@@ -249,9 +259,11 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
     </div>
   </header>
 
+  <nav class="pages" aria-label="Pages"><button type="button" data-p="m">Daily metrics</button><button type="button" data-p="s">Skill hours</button></nav>
+
   <div class="cols">
     <main>
-            <section class="grp" id="metrics">
+            <section class="grp pm" id="metrics">
         <div class="sec-h"><b>METRICS</b>
           <span class="mhd"><label for="mday">Logging for</label><input id="mday" type="date"><span role="group" aria-label="Chart range"><button type="button" class="btn" data-r="30" aria-pressed="true">30 days</button> <button type="button" class="btn" data-r="365" aria-pressed="false">1 year</button> <button type="button" class="btn" data-r="all" aria-pressed="false">All time</button></span></span>
         </div>
@@ -265,8 +277,8 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
         <div class="sec-h" style="margin-top:18px"><b>METRIC LOG</b><span id="nmet">0 entries</span></div>
         <div id="mlog"></div>
       </section>
-      <div id="tree"></div>
-      <section class="grp" id="progress">
+      <div id="tree" class="ps"></div>
+      <section class="grp ps" id="progress">
         <div class="sec-h"><b>PROGRESS</b><span id="cmeta"></span></div>
         <div class="cbar">
           <div class="cchips" id="cchips" role="group" aria-label="Skills shown on the chart"></div>
@@ -284,15 +296,15 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
         <div class="tw"><table class="ft" id="ftab" aria-label="Predicted date each level is reached"></table></div>
         <p class="note"><b>HOW TO READ IT.</b> Solid line: hours you have logged. Dashed line: where you land if you keep your average pace since you first practised, using logged hours only (starting baselines are not counted as pace, and the window is never shorter than 28 days). Dots: the predicted month each level is reached. Treat the dates as rough, because pace changes and a few weeks of data say little.</p>
       </section>
-      <section class="grp">
+      <section class="grp ps">
         <div class="sec-h"><b>RECENT SESSIONS</b><span id="nlogs">0 logged</span></div>
         <div id="recent"></div>
       </section>
-      <p class="note" id="lvnote"></p>
-      <p class="note"><b>ACmetrics.</b> A skill's hours include every sub-skill beneath it plus anything logged straight to it. Progress is measured against the World Class level, 3,600 deliberate hours in one field. Log only focused practice at the edge of your ability, not routine work or time near the subject. A skill started at a higher level carries that level's hours as a baseline.</p>
+      <p class="note ps" id="lvnote"></p>
+      <p class="note ps"><b>ACmetrics.</b> A skill's hours include every sub-skill beneath it plus anything logged straight to it. Progress is measured against the World Class level, 3,600 deliberate hours in one field. Log only focused practice at the edge of your ability, not routine work or time near the subject. A skill started at a higher level carries that level's hours as a baseline.</p>
     </main>
 
-    <aside aria-label="Log console">
+    <aside class="ps" aria-label="Log console">
       <section class="screen" id="screen">
         <div class="scr-h"><span>LOG CONSOLE</span><span id="sync">LOCAL</span></div>
         <div class="scr-b">
@@ -1233,6 +1245,20 @@ document.getElementById("cLoad").addEventListener("click",function(){
   closeDlg(dlg);
   ask({title:"Replace your log?",text:"This replaces everything here with "+d.skills.length+" skills, "+d.logs.length+" sessions and "+d.metrics.length+" metric entries from the text.",ok:"Replace",danger:true},function(){DATA=d;save();toast("Backup loaded.")});
 });
+
+/* ---------- pages: 1 = daily metrics, 2 = skill hours ---------- */
+(function(){
+  var wrap=document.querySelector(".wrap"),btns=document.querySelectorAll(".pages button");
+  function setPage(p,keep){
+    if(p!=="s")p="m";
+    wrap.setAttribute("data-page",p);
+    for(var i=0;i<btns.length;i++){var on=btns[i].getAttribute("data-p")===p;if(on)btns[i].setAttribute("aria-current","page");else btns[i].removeAttribute("aria-current")}
+    if(keep){lsSet("mastery-page",p);try{history.replaceState(null,"","#"+(p==="s"?"skills":"daily"))}catch(e){}}
+  }
+  for(var i=0;i<btns.length;i++)btns[i].addEventListener("click",function(){setPage(this.getAttribute("data-p"),true);window.scrollTo(0,0)});
+  window.addEventListener("hashchange",function(){if(location.hash==="#skills")setPage("s",false);else if(location.hash==="#daily")setPage("m",false)});
+  setPage(location.hash==="#skills"?"s":location.hash==="#daily"?"m":(lsGet("mastery-page")==="s"?"s":"m"),false);
+})();
 
 /* ---------- go ---------- */
 render(); tick(); setInterval(tick,1000); init();
