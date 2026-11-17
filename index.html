@@ -93,7 +93,7 @@ ol.tree ol{margin-left:1.6em;border-left:1px solid var(--rule);padding-left:8px}
 ol.logs{list-style:none;margin:0;padding:0}
 .logs li{display:grid;grid-template-columns:5.2em minmax(0,1fr) auto auto;gap:4px 10px;padding:5px 6px;align-items:baseline;border-radius:2px}
 .logs li:hover{background:var(--hover)}
-.logs .d{font-family:var(--crt);font-size:20px;color:var(--muted)}
+.logs .d{font-family:var(--crt);font-size:20px;color:var(--muted);white-space:nowrap}
 .logs .s{font-size:14px;font-weight:600;overflow-wrap:anywhere}
 .logs .s small{display:block;font-weight:400;color:var(--muted);font-size:12px}
 .logs .h{font-family:var(--crt);font-size:22px;color:var(--amber);text-align:right}
@@ -139,7 +139,7 @@ dialog .bar2{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
 @media (min-width:1400px){ .cols{grid-template-columns:minmax(0,1fr) 380px} }
 @media (max-width:820px){
   .cols{grid-template-columns:minmax(0,1fr)}
-  .screen{position:static}
+  .screen{position:relative;top:auto}
   .stamp{text-align:left}
   .logs li{grid-template-columns:4.6em minmax(0,1fr) auto auto}
 }
@@ -192,6 +192,40 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 .ft tbody tr:hover td{background:var(--hover)}
 .ft td.ok{color:var(--lvm);font-weight:700;letter-spacing:.06em;font-size:11px}
 .ft .key{display:inline-block;width:16px;border-top:2px solid var(--k);vertical-align:middle;margin-right:8px}
+
+/* metrics: daily counts and fitness benchmarks */
+#metrics+#tree{margin-top:28px}
+#metrics .sec-h{flex-wrap:wrap}
+.mhd{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;text-transform:none;letter-spacing:0}
+.mhd label{font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mhd input{background:var(--bg);color:var(--fg);border:1px solid var(--rule);padding:2px 6px;font:600 12px var(--display);color-scheme:inherit}
+.mhd .btn[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.mgl{margin:14px 0 8px;font-size:10px;font-weight:800;letter-spacing:.16em;color:var(--muted)}
+.mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.mc{border:1px solid var(--rule);padding:10px 12px 8px;min-width:0}
+.mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mh h3{margin:0;font-size:15px;font-weight:800;overflow-wrap:anywhere}
+.mb{font-family:var(--crt);font-size:34px;line-height:1;color:var(--amber);white-space:nowrap}
+.mb small{font-family:var(--display);font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--muted);margin-left:4px}
+.mc .m{margin:4px 0 6px}
+.mc .m b{color:var(--fg)}
+.mc .pb{margin:6px 0 4px}
+.mc .pb b.tk{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--fg);z-index:1}
+.mq{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 4px}
+.mq .btn{padding:4px 9px}
+.mq input{flex:1 1 90px;min-width:80px;max-width:160px;background:var(--bg);color:var(--fg);border:1px solid var(--rule);padding:4px 8px;font:600 14px var(--display);color-scheme:inherit}
+.mq .btn.go{background:var(--blue);border-color:var(--blue);color:#fff}
+.mch{display:block;width:100%;height:auto;margin-top:4px}
+.mch .gl{stroke:var(--rule);stroke-width:1;fill:none}
+.mch .tx{fill:var(--muted);font:700 9.5px var(--display);letter-spacing:.04em}
+.mch .tx.em{font-weight:600;letter-spacing:.02em}
+.mch .bar{fill:var(--s1)}
+.mch .ln{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.mch .dot{fill:var(--s1);stroke:var(--bg);stroke-width:2}
+.mch .t1{stroke:var(--lv);stroke-width:1;fill:none}
+.mch .t2{stroke:var(--lvm);stroke-width:1;fill:none}
+.mch .hit{fill:transparent}
+@media (max-width:820px){.mgrid{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -211,6 +245,18 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 
   <div class="cols">
     <main>
+            <section class="grp" id="metrics">
+        <div class="sec-h"><b>METRICS</b>
+          <span class="mhd"><label for="mday">Logging for</label><input id="mday" type="date"><span role="group" aria-label="Chart range"><button type="button" class="btn" data-r="30" aria-pressed="true">30 days</button> <button type="button" class="btn" data-r="365" aria-pressed="false">1 year</button> <button type="button" class="btn" data-r="all" aria-pressed="false">All time</button></span></span>
+        </div>
+        <div class="mgl">DAILY</div>
+        <div class="mgrid" id="mdaily"></div>
+        <div class="mgl">FITNESS BENCHMARKS</div>
+        <div class="mgrid" id="mfit"></div>
+        <p class="note"><b>HOW TO READ IT.</b> Daily counts and hours add up through the day. Bars show each day on the 30-day view and the average per day for each week (or month, over several years) on the longer views. Fitness charts plot your best result each day. The amber line is target 1 and the green line is target 2. Time charts are flipped so higher on the chart always means faster. Hover or tap a bar or dot for its value.</p>
+        <div class="sec-h" style="margin-top:18px"><b>METRIC LOG</b><span id="nmet">0 entries</span></div>
+        <div id="mlog"></div>
+      </section>
       <div id="tree"></div>
       <section class="grp" id="progress">
         <div class="sec-h"><b>PROGRESS</b><span id="cmeta"></span></div>
@@ -339,13 +385,13 @@ function tick(){
 
 /* ---------- data model ----------
    { version:1, updated:ISO, skills:[{id,name,parent|null,target}], logs:[{id,skill,date:"YYYY-MM-DD",hours,note,at}] } */
-var DATA={version:1,updated:"",skills:[],logs:[]};
+var DATA={version:1,updated:"",skills:[],logs:[],metrics:[]};
 var OPEN={}, SEL=null;
 try{var _o=JSON.parse(lsGet("mastery-open")||"{}"); if(_o&&typeof _o==="object")OPEN=_o}catch(e){}
 SEL=lsGet("mastery-sel");
 
 function clean(d){
-  var out={version:1,updated:(d&&d.updated)||"",skills:[],logs:[]};
+  var out={version:1,updated:(d&&d.updated)||"",skills:[],logs:[],metrics:[]};
   if(!d||typeof d!=="object") return out;
   var ids={};
   (Array.isArray(d.skills)?d.skills:[]).forEach(function(s){
@@ -355,6 +401,10 @@ function clean(d){
   (Array.isArray(d.logs)?d.logs:[]).forEach(function(l){
     var h=+l.hours;
     if(l&&l.id&&ids[l.skill]&&h>0&&h<=24*366&&isFinite(dayMs(l.date))) out.logs.push({id:String(l.id),skill:String(l.skill),date:l.date,hours:h,note:String(l.note||"").slice(0,140),at:l.at||"",base:l.base?true:undefined});
+  });
+  (Array.isArray(d.metrics)?d.metrics:[]).forEach(function(e){
+    var def=e&&MBY[e.m],v=e&&+e.v;
+    if(def&&e.id&&mOk(def,v)&&isFinite(dayMs(e.date)))out.metrics.push({id:String(e.id),m:def.k,date:e.date,v:v,at:e.at||""});
   });
   return out;
 }
@@ -454,7 +504,7 @@ function init(){
   pull().then(function(remote){
     if(remote&&(!dirty||!local)){DATA=clean(remote);writeLocal();lsDel("mastery-dirty");render();setSync(canSync()?"ok":"local",canSync()?"SYNCED FROM REPO":"READ-ONLY – ADD TOKEN TO SAVE")}
     else if(dirty&&local){render();if(canSync()){setSync("wait","SAVING…");push()}else setSync("local","LOCAL ONLY – ADD TOKEN")}
-    else if(canSync()&&DATA.skills.length){push()}
+    else if(canSync()&&(DATA.skills.length||DATA.metrics.length)){push()}
     else setSync(canSync()?"ok":"local",canSync()?"READY – NO DATA YET":"LOCAL ONLY – ADD TOKEN");
   }).catch(function(e){
     render();
@@ -629,6 +679,7 @@ function render(){
     '<div class="kv"><span>28-DAY AVG</span><span>'+fmt(d28/4,1)+' H/WK</span></div>'+
     '<div class="kv"><span>STREAK</span><span>'+streak+' DAY'+(streak===1?"":"S")+'</span></div>';
   drawTimer();
+  drawMetrics();
   drawChart();
 }
 
@@ -889,6 +940,188 @@ function drawChart(){
   else window.addEventListener("resize",function(){drawChart()});
 })();
 
+/* ---------- metrics: daily counts/hours and fitness benchmarks ----------
+   DATA.metrics = [{id, m:key, date:"YYYY-MM-DD", v:number, at:ISO}]. Times are stored in seconds.
+   g "d": entries add up within a day. g "f": the day's value is the best entry (highest, or lowest where dir is -1). */
+var MDEFS=[
+ {k:"adm",g:"d",n:"Admin tasks",u:"tasks",f:"n",q:[1]},
+ {k:"dwh",g:"d",n:"Deep work",u:"h",f:"h",q:[0.25,0.5,1,2]},
+ {k:"dwt",g:"d",n:"Deep work tasks",u:"tasks",f:"n",q:[1]},
+ {k:"std",g:"d",n:"Study",u:"h",f:"h",q:[0.25,0.5,1,2]},
+ {k:"pu",g:"f",n:"Press ups",u:"reps",f:"n",dir:1,t:[65],ph:"max reps"},
+ {k:"pl",g:"f",n:"Pull ups",u:"reps",f:"n",dir:1,t:[25],ph:"max reps"},
+ {k:"pk",g:"f",n:"Plank hold",u:"",f:"t",dir:1,t:[180],ph:"m:ss or seconds",mul:1},
+ {k:"dl",g:"f",n:"Deadlift, 5 reps",u:"kg",f:"kg",dir:1,t:[120,200],ph:"kg"},
+ {k:"bp",g:"f",n:"Bench press, 5 reps",u:"kg",f:"kg",dir:1,t:[110,135],ph:"kg"},
+ {k:"sq",g:"f",n:"Squat, 5 reps",u:"kg",f:"kg",dir:1,t:[120,150],ph:"kg"},
+ {k:"fc",g:"f",n:"Farmers carry",u:"kg",f:"kg",dir:1,t:[30,55],ph:"kg"},
+ {k:"r5",g:"f",n:"5 km run",u:"",f:"t",dir:-1,t:[1080],ph:"m:ss",mul:60},
+ {k:"k4",g:"f",n:"4 km ruck, 40 kg",u:"",f:"t",dir:-1,t:[3000,2100],ph:"m:ss",mul:60},
+ {k:"k2",g:"f",n:"2 km ruck, 25 kg",u:"",f:"t",dir:-1,t:[900,720],ph:"m:ss",mul:60},
+ {k:"ftp",g:"f",n:"Cycling FTP",u:"W/kg",f:"w",dir:1,t:[4],ph:"W/kg, e.g. 3.6"}
+];
+var MBY={};MDEFS.forEach(function(d){MBY[d.k]=d});
+var MR="30";try{var _r=lsGet("mastery-mrange");if(_r==="30"||_r==="365"||_r==="all")MR=_r}catch(e){}
+function mNum(d,v){
+  if(d.f==="t"){v=Math.round(v);var h=Math.floor(v/3600),m=Math.floor(v%3600/60),s=v%60;return h?h+":"+p2(m)+":"+p2(s):m+":"+p2(s)}
+  if(d.f==="w")return v.toFixed(2);
+  return String(Math.round(v*100)/100);
+}
+function mFmt(d,v){return mNum(d,v)+(d.u?" "+d.u:"")}
+function mParse(d,s){
+  s=String(s==null?"":s).trim().replace(",",".");if(!s)return NaN;
+  if(d.f==="t"&&s.indexOf(":")>=0){
+    var p=s.split(":");if(p.length>3)return NaN;var t=0;
+    for(var i=0;i<p.length;i++){var x=+p[i];if(p[i]===""||!isFinite(x)||x<0||(i>0&&x>=60))return NaN;t=t*60+x}
+    return t;
+  }
+  var v=+s;if(!isFinite(v))return NaN;
+  return d.f==="t"?v*d.mul:v;
+}
+function mOk(d,v){return v>0&&v<=(d.f==="t"?86400:d.f==="w"?10:d.f==="h"?24:100000)}
+function mDate(){var v=gid("mday").value;return isFinite(dayMs(v))&&dayMs(v)<=Date.now()+864e5?v:todayStr()}
+function addMetric(k,v,date){
+  var d=MBY[k];if(!d||!mOk(d,v))return false;
+  date=date||mDate();
+  if(d.f==="h"){var tot=v;DATA.metrics.forEach(function(e){if(e.m===k&&e.date===date)tot+=e.v});if(tot>24){toast("That would be more than 24 hours on one day.");return false}}
+  DATA.metrics.push({id:uid(),m:k,date:date,v:Math.round(v*100)/100,at:new Date().toISOString()});
+  save();return true;
+}
+function mDays(d){
+  var o={};
+  DATA.metrics.forEach(function(e){
+    if(e.m!==d.k)return;var x=o[e.date];
+    if(d.g==="d")o[e.date]=(x||0)+e.v;
+    else o[e.date]=x==null?e.v:(d.dir===1?Math.max(x,e.v):Math.min(x,e.v));
+  });
+  return o;
+}
+function mTicks(lo,hi,n,isT){
+  var raw=(hi-lo)/n,step;
+  if(isT){var c=[5,10,15,30,60,120,180,300,600,900,1800,3600,7200];step=c[c.length-1];for(var i=0;i<c.length;i++){if(c[i]>=raw){step=c[i];break}}}
+  else{var p=Math.pow(10,Math.floor(Math.log(raw)/Math.LN10)),m=raw/p;step=(m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*p}
+  var out=[];for(var v=Math.ceil(lo/step-1e-9)*step;v<=hi+1e-9&&out.length<12;v+=step)out.push(Math.round(v*1000)/1000);
+  return out;
+}
+function dShort(n){var d=new Date(n*864e5);return p2(d.getUTCDate())+" "+MONTHS[d.getUTCMonth()].slice(0,3)}
+function mChart(d,rng){
+  var W=360,H=156,L=38,R=8,TP=12,B=22,pw=W-L-R,ph=H-TP-B,T0=dnum(todayStr()),days=mDays(d),keys=Object.keys(days);
+  var first=Infinity;keys.forEach(function(k){var n=dnum(k);if(n<first)first=n});
+  var xmin=rng==="30"?T0-29:rng==="365"?T0-364:Math.min(first===Infinity?T0-13:first,T0-13),xmax=T0+1;
+  var bs=1;
+  if(d.g==="d"){bs=(xmax-xmin)<=45?1:(xmax-xmin)<=3*366?7:30;if(bs>1)xmin=xmax-Math.ceil((xmax-xmin)/bs)*bs}
+  var X=function(n){return L+(n-xmin)/(xmax-xmin)*pw};
+  var inR=keys.filter(function(k){var n=dnum(k);return n>=xmin&&n<xmax}).sort();
+  var s='<svg class="mch" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(d.n+" over "+(rng==="30"?"the last 30 days":rng==="365"?"the last year":"all time")+": "+inR.length+" day"+(inR.length===1?"":"s")+" with entries. The metric log below lists every entry.")+'">';
+  if(!inR.length)return s+'<text class="tx em" x="'+W/2+'" y="'+H/2+'" text-anchor="middle">No entries in this range</text></svg>';
+  var lo=0,hi=1,ticks,Y,body="",bars=[],pts=[];
+  if(d.g==="d"){
+    var bk={};
+    inR.forEach(function(k){var b=Math.floor((dnum(k)-xmin)/bs);bk[b]=(bk[b]||0)+days[k]});
+    Object.keys(bk).forEach(function(b){var b0=xmin+b*bs,nd=Math.min(bs,xmax-b0);bars.push({b0:b0,nd:nd,sum:bk[b],v:bk[b]/nd})});
+    var mx=0;bars.forEach(function(x){if(x.v>mx)mx=x.v});
+    ticks=mTicks(0,mx*1.08,3,false);hi=Math.max(ticks[ticks.length-1]||0,mx)||1;
+    Y=function(v){return TP+(1-v/hi)*ph};
+    bars.forEach(function(x){
+      var x0=X(x.b0),x1=X(x.b0+x.nd),bw=Math.max(1,Math.min(24,x1-x0-2)),bx=x0+(x1-x0-bw)/2,by=Y(x.v),bh=Y(0)-by,r=Math.min(3,bw/2,bh);
+      var tip=bs===1?dFull(x.b0)+": "+mFmt(d,x.sum):dShort(x.b0)+" to "+dShort(x.b0+x.nd-1)+": "+mFmt(d,x.v)+" per day on average ("+mFmt(d,x.sum)+" in total)";
+      body+='<path class="bar" d="M'+bx+' '+(by+bh)+'V'+(by+r)+'Q'+bx+' '+by+' '+(bx+r)+' '+by+'H'+(bx+bw-r)+'Q'+(bx+bw)+' '+by+' '+(bx+bw)+' '+(by+r)+'V'+(by+bh)+'Z"><title>'+esc(tip)+'</title></path>'+
+        '<rect class="hit" x="'+x0+'" y="'+TP+'" width="'+Math.max(2,x1-x0)+'" height="'+ph+'"><title>'+esc(tip)+'</title></rect>';
+    });
+  }else{
+    inR.forEach(function(k){pts.push({n:dnum(k),k:k,v:days[k]})});
+    var vals=pts.map(function(p){return p.v}).concat(d.t),mn=Math.min.apply(null,vals),mxv=Math.max.apply(null,vals),span=(mxv-mn)||mxv*0.2||1;
+    lo=Math.max(0,mn-span*0.1);hi=mxv+span*0.1;
+    ticks=mTicks(lo,hi,3,d.f==="t");
+    Y=function(v){var f=(v-lo)/(hi-lo);return TP+(d.dir===1?1-f:f)*ph};
+  }
+  ticks.forEach(function(v){
+    var y=Y(v);s+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text class="tx" x="'+(L-5)+'" y="'+(y+3)+'" text-anchor="end">'+esc(d.f==="t"?Math.floor(v/60)+":"+p2(Math.round(v%60)):mNum(d,v))+'</text>';
+  });
+  // x axis
+  var xt=[];
+  if(rng==="30"){for(var n=T0;n>=xmin;n-=7)xt.push([n+0.5,dShort(n)])}
+  else chTicks(xmin,xmax,W).forEach(function(t){xt.push([t[0],t[1]])});
+  var lastX=-99;
+  xt.sort(function(a,b){return a[0]-b[0]}).forEach(function(t){var x=X(t[0]);if(x-lastX>=40&&x>=L&&x<=W-R+4){s+='<line class="gl" x1="'+x+'" x2="'+x+'" y1="'+(TP+ph)+'" y2="'+(TP+ph+4)+'"/><text class="tx" x="'+x+'" y="'+(H-6)+'" text-anchor="'+(x>W-26?"end":"middle")+'">'+esc(t[1])+'</text>';lastX=x}});
+  s+=body;
+  if(d.g==="f"){
+    d.t.forEach(function(t,i){
+      var y=Y(t);s+='<line class="'+(i?"t2":"t1")+'" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/>'+
+        '<text class="tx em" x="'+(W-R-2)+'" y="'+(d.dir===1?y-3:y+10)+'" text-anchor="end">'+(d.t.length>1?"T"+(i+1)+" ":"TARGET ")+esc(mNum(d,t))+'</text>';
+    });
+    var path="";pts.forEach(function(p,i){path+=(i?"L":"M")+X(p.n+0.5)+" "+Y(p.v)});
+    if(pts.length>1)s+='<path class="ln" d="'+path+'"/>';
+    pts.forEach(function(p){var tip=dFull(p.n)+": "+mFmt(d,p.v);s+='<circle class="dot" cx="'+X(p.n+0.5)+'" cy="'+Y(p.v)+'" r="4"><title>'+esc(tip)+'</title></circle><circle class="hit" cx="'+X(p.n+0.5)+'" cy="'+Y(p.v)+'" r="11"><title>'+esc(tip)+'</title></circle>'});
+  }
+  return s+'</svg>';
+}
+function mBig(d,v){return mNum(d,v)+(d.u?'<small>'+esc(d.u)+'</small>':'')}
+function mCard(d,sel,T0){
+  var days=mDays(d),keys=Object.keys(days),h='<div class="mc" data-k="'+d.k+'"><div class="mh"><h3>'+esc(d.n)+'</h3>',m="",extra="";
+  if(d.g==="d"){
+    var tv=days[sel]||0,s7=0,s30=0;
+    keys.forEach(function(k){var n=dnum(k);if(n>T0-7&&n<=T0)s7+=days[k];if(n>T0-30&&n<=T0)s30+=days[k]});
+    h+='<span class="mb" aria-label="'+esc(mFmt(d,tv))+'">'+mBig(d,tv)+'</span></div>';
+    m='<div class="m">'+(sel===todayStr()?"TODAY":esc(dFull(dnum(sel)).toUpperCase()))+' · AVG PER DAY: 7 DAYS <b>'+mNum(d,s7/7)+'</b> · 30 DAYS <b>'+mNum(d,s30/30)+'</b></div>';
+    extra='<div class="mq">'+d.q.map(function(v){return '<button type="button" class="btn go" data-a="madd" data-v="'+v+'">+'+(d.f==="h"?(v<1?Math.round(v*60)+"m":v+"h"):v)+'</button>'}).join("")+'<button type="button" class="btn" data-a="mundo">Undo</button></div>';
+  }else{
+    var best=null,lat=null,latD="";
+    keys.forEach(function(k){var v=days[k];if(best==null||(d.dir===1?v>best:v<best))best=v;if(k>latD){latD=k;lat=v}});
+    h+='<span class="mb" aria-label="'+esc(best==null?"no entries":"best "+mFmt(d,best))+'">'+(best==null?'–':mBig(d,best))+'</span></div>';
+    var tl=d.t.map(function(t,i){
+      var ok=best!=null&&(d.dir===1?best>=t:best<=t),pct=best==null?0:(d.dir===1?best/t:t/best)*100;
+      return (d.t.length>1?"T"+(i+1):"TARGET")+' <b>'+esc(mFmt(d,t))+'</b> '+(ok?'<b>✓</b>':best==null?'':Math.round(pct)+'%');
+    }).join(" · ");
+    m='<div class="m">'+(best==null?'NO ENTRIES YET · ':'BEST · LATEST <b>'+esc(mFmt(d,lat))+'</b> ('+esc(dShort(dnum(latD)))+') · ')+tl+'</div>';
+    var lt=d.t[d.t.length-1],fin=best==null?0:Math.min(100,(d.dir===1?best/lt:lt/best)*100),tk="";
+    if(d.t.length>1)tk='<b class="tk" style="left:'+Math.min(100,(d.dir===1?d.t[0]/lt:lt/d.t[0])*100)+'%"></b>';
+    m+='<div class="pb'+(fin>=100?" full":"")+'" role="progressbar" aria-label="Progress to final target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(fin)+'"><i style="width:'+fin+'%"></i>'+tk+'</div>';
+    extra='<div class="mq"><input type="text" inputmode="'+(d.f==="t"?"text":"decimal")+'" autocomplete="off" placeholder="'+esc(d.ph)+'" aria-label="'+esc(d.n)+' result"><button type="button" class="btn go" data-a="mlog">Log</button><button type="button" class="btn" data-a="mundo">Undo</button></div>';
+  }
+  return h+m+extra+mChart(d,MR)+'</div>';
+}
+function drawMetrics(){
+  var box=gid("metrics");if(!box)return;
+  var keep={},focus=null,ae=document.activeElement;
+  box.querySelectorAll(".mc input").forEach(function(i){var k=i.closest(".mc").getAttribute("data-k");if(i.value)keep[k]=i.value;if(i===ae)focus=k});
+  var sel=mDate(),T0=dnum(todayStr());
+  gid("mdaily").innerHTML=MDEFS.filter(function(d){return d.g==="d"}).map(function(d){return mCard(d,sel,T0)}).join("");
+  gid("mfit").innerHTML=MDEFS.filter(function(d){return d.g==="f"}).map(function(d){return mCard(d,sel,T0)}).join("");
+  box.querySelectorAll(".mc input").forEach(function(i){var k=i.closest(".mc").getAttribute("data-k");if(keep[k])i.value=keep[k];if(k===focus){i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}}});
+  box.querySelectorAll("button[data-r]").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-r")===MR?"true":"false")});
+  var es=DATA.metrics.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.at||"")<(a.at||"")?-1:1});
+  gid("nmet").textContent=es.length+" entr"+(es.length===1?"y":"ies");
+  gid("mlog").innerHTML=es.length?'<ol class="logs">'+es.slice(0,20).map(function(e){
+    var d=MBY[e.m];return '<li><span class="d">'+e.date.slice(8)+" "+MONTHS[+e.date.slice(5,7)-1].slice(0,3)+'</span><span class="s">'+esc(d.n)+'</span><span class="h">'+esc(mFmt(d,e.v).toUpperCase())+'</span><button type="button" class="x" data-mdel="'+e.id+'" aria-label="Delete entry">×</button></li>';
+  }).join("")+'</ol>':'<p class="empty">Nothing logged yet. Use the buttons on any card above.</p>';
+}
+function undoMetric(k){
+  var last=null;DATA.metrics.forEach(function(e){if(e.m===k&&(!last||(e.at||"")>=(last.at||"")))last=e});
+  if(!last){toast("Nothing to undo for "+MBY[k].n+".");return}
+  DATA.metrics=DATA.metrics.filter(function(e){return e.id!==last.id});save();toast("Removed "+MBY[k].n+": "+mFmt(MBY[k],last.v)+" on "+dShort(dnum(last.date))+".");
+}
+gid("mday").value=todayStr();
+gid("mday").addEventListener("change",function(){drawMetrics()});
+gid("metrics").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  var r=b.getAttribute("data-r");if(r){MR=r;lsSet("mastery-mrange",r);drawMetrics();return}
+  var del=b.getAttribute("data-mdel");if(del){DATA.metrics=DATA.metrics.filter(function(x){return x.id!==del});save();toast("Entry removed.");return}
+  var card=b.closest(".mc");if(!card)return;
+  var k=card.getAttribute("data-k"),d=MBY[k],a=b.getAttribute("data-a");
+  if(a==="madd")addMetric(k,+b.getAttribute("data-v"));
+  else if(a==="mundo")undoMetric(k);
+  else if(a==="mlog"){
+    var inp=card.querySelector("input"),v=mParse(d,inp.value);
+    if(!mOk(d,v)){toast("Enter a valid "+d.n.toLowerCase()+" result"+(d.f==="t"?" as m:ss.":"."));return}
+    inp.value="";addMetric(k,v);
+  }
+});
+gid("metrics").addEventListener("keydown",function(e){
+  if(e.key!=="Enter"||e.target.tagName!=="INPUT"||!e.target.closest(".mc"))return;
+  e.preventDefault();var b=e.target.closest(".mc").querySelector('button[data-a="mlog"]');if(b)b.click();
+});
+
 /* ---------- events ---------- */
 document.getElementById("tree").addEventListener("click",function(e){
   var b=e.target.closest("button[data-a]"); if(!b)return;
@@ -933,7 +1166,7 @@ document.getElementById("cSave").addEventListener("click",function(){
   if(!canSync()){setSync("local","LOCAL ONLY – ADD TOKEN");return}
   setSync("wait","CHECKING REPO…");
   pull().then(function(remote){
-    var local=DATA.skills.length||DATA.logs.length, r=remote?clean(remote):null;
+    var local=DATA.skills.length||DATA.logs.length||DATA.metrics.length, r=remote?clean(remote):null;
     if(r&&local&&r.updated>DATA.updated){
       ask({title:"Repo has a newer copy",text:"Use the repo copy, or overwrite it with this device?",ok:"Use repo copy"},function(){DATA=r;writeLocal();lsDel("mastery-dirty");render();setSync("ok","SYNCED FROM REPO")});
       return;
@@ -949,9 +1182,9 @@ document.getElementById("cCopy").addEventListener("click",function(){
 });
 document.getElementById("cLoad").addEventListener("click",function(){
   var d; try{d=clean(JSON.parse(cText.value))}catch(e){toast("That text is not a valid backup.");return}
-  if(!d.skills.length&&!d.logs.length){toast("That backup has no skills or sessions.");return}
+  if(!d.skills.length&&!d.logs.length&&!d.metrics.length){toast("That backup has no skills, sessions or metrics.");return}
   closeDlg(dlg);
-  ask({title:"Replace your log?",text:"This replaces everything here with "+d.skills.length+" skills and "+d.logs.length+" sessions from the text.",ok:"Replace",danger:true},function(){DATA=d;save();toast("Backup loaded.")});
+  ask({title:"Replace your log?",text:"This replaces everything here with "+d.skills.length+" skills, "+d.logs.length+" sessions and "+d.metrics.length+" metric entries from the text.",ok:"Replace",danger:true},function(){DATA=d;save();toast("Backup loaded.")});
 });
 
 /* ---------- go ---------- */
