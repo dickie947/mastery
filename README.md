@@ -1,4 +1,4 @@
-# ACmetrics
+# Metrics
 
 Personal deliberate-practice tracker. Static site; your log lives in `data/mastery.json`.
 
