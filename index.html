@@ -223,7 +223,7 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 .mch .ln{fill:none;stroke:var(--s1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .mch .dot{fill:var(--s1);stroke:var(--bg);stroke-width:2}
 .mch .t1{stroke:var(--lv);stroke-width:1;fill:none}
-.mch .t2{stroke:var(--lvm);stroke-width:1;fill:none}
+.mch .t2{stroke:var(--lvm);stroke-width:1.5;stroke-dasharray:7 5;fill:none}
 .mch .hit{fill:transparent}
 .mch .we{fill:var(--fg);opacity:.06}
 @media (max-width:820px){.mgrid{grid-template-columns:minmax(0,1fr)}}
@@ -983,6 +983,8 @@ var MDEFS=[
  {k:"r5",g:"f",c:"e",n:"5 km run",u:"",f:"t",dir:-1,t:[1080],ph:"m:ss",mul:60},
  {k:"k4",g:"f",c:"e",n:"4 km ruck, 40 kg",u:"",f:"t",dir:-1,t:[3000,2100],ph:"m:ss",mul:60},
  {k:"k2",g:"f",c:"e",n:"2 km ruck, 25 kg",u:"",f:"t",dir:-1,t:[900,720],ph:"m:ss",mul:60},
+ {k:"tsp",g:"f",c:"e",n:"Sprint triathlon",u:"",f:"t",dir:-1,t:[5220,4500,3600],ph:"h:mm:ss",mul:60},
+ {k:"tst",g:"f",c:"e",n:"Standard triathlon",u:"",f:"t",dir:-1,t:[9240,8400,7200],ph:"h:mm:ss",mul:60},
  {k:"ftp",g:"f",c:"e",n:"Cycling FTP",u:"W/kg",f:"w",dir:1,t:[4],ph:"W/kg, e.g. 3.6"}
 ];
 var MBY={};MDEFS.forEach(function(d){MBY[d.k]=d});
@@ -1030,7 +1032,7 @@ function mTicks(lo,hi,n,isT){
 }
 function dShort(n){var d=new Date(n*864e5);return p2(d.getUTCDate())+" "+MONTHS[d.getUTCMonth()].slice(0,3)}
 /* combined charts: one per group. Fitness lines are % of the final target (times: target / time), daily lines are the per-day average. */
-var MSHORT={adm:"Admin tasks",dwh:"Deep work",dwt:"Deep work tasks",std:"Study",pu:"Press ups",pl:"Pull ups",pk:"Plank",dl:"Deadlift",bp:"Bench",sq:"Squat",fc:"Farmers",r5:"5 km run",k4:"4 km ruck",k2:"2 km ruck",ftp:"FTP"};
+var MSHORT={adm:"Admin tasks",dwh:"Deep work",dwt:"Deep work tasks",std:"Study",pu:"Press ups",pl:"Pull ups",pk:"Plank",dl:"Deadlift",bp:"Bench",sq:"Squat",fc:"Farmers",r5:"5 km run",k4:"4 km ruck",k2:"2 km ruck",tsp:"Sprint tri",tst:"Standard tri",ftp:"FTP"};
 var MC={vis:{},slot:{}},MC_MAX=8,MC_W={d:0,s:0,e:0};
 var MDV="day";try{if(lsGet("mastery-mdv")==="avg")MDV="avg"}catch(e){}
 try{var _mc=JSON.parse(lsGet("mastery-mchart")||"{}");if(_mc&&typeof _mc==="object"){if(_mc.vis&&typeof _mc.vis==="object")MC.vis=_mc.vis;if(_mc.slot&&typeof _mc.slot==="object")MC.slot=_mc.slot}}catch(e){}
@@ -1142,7 +1144,7 @@ function mCard(d,sel,T0){
     }).join(" · ");
     m='<div class="m">'+(best==null?'NO ENTRIES YET · ':'BEST · LATEST <b>'+esc(mFmt(d,lat))+'</b> ('+esc(dShort(dnum(latD)))+') · ')+tl+'</div>';
     var lt=d.t[d.t.length-1],fin=best==null?0:Math.min(100,(d.dir===1?best/lt:lt/best)*100),tk="";
-    if(d.t.length>1)tk='<b class="tk" style="left:'+Math.min(100,(d.dir===1?d.t[0]/lt:lt/d.t[0])*100)+'%"></b>';
+    d.t.slice(0,-1).forEach(function(t0){tk+='<b class="tk" style="left:'+Math.min(100,(d.dir===1?t0/lt:lt/t0)*100)+'%"></b>'});
     m+='<div class="pb'+(fin>=100?" full":"")+'" role="progressbar" aria-label="Progress to final target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.round(fin)+'"><i style="width:'+fin+'%"></i>'+tk+'</div>';
     extra='<div class="mq"><input type="text" inputmode="'+(d.f==="t"?"text":"decimal")+'" autocomplete="off" placeholder="'+esc(d.ph)+'" aria-label="'+esc(d.n)+' result"><button type="button" class="btn go" data-a="mlog">Log</button><button type="button" class="btn" data-a="mundo">Undo</button></div>';
   }
