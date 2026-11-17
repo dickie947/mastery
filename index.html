@@ -29,7 +29,7 @@
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--display);font-size:15px;line-height:1.35;margin:0;
-  padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 28px}
+  padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:env(safe-area-inset-top,0px) calc(28px + env(safe-area-inset-bottom,0px))}
 .wrap{max-width:none;margin:0 auto}
 a{color:var(--link);text-decoration:none}
 a:hover{text-decoration:underline}
