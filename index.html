@@ -225,6 +225,8 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 .mch .t1{stroke:var(--lv);stroke-width:1;fill:none}
 .mch .t2{stroke:var(--lvm);stroke-width:1.5;stroke-dasharray:7 5;fill:none}
 .mch .hit{fill:transparent}
+.mch .pbm{stroke:var(--bg);stroke-width:2;stroke-linejoin:round}
+.pbtag{font:800 10px var(--display);letter-spacing:.12em;color:var(--lvm);border:1px solid var(--lvm);padding:0 5px;margin-left:6px;vertical-align:middle;white-space:nowrap}
 .mch .we{fill:var(--fg);opacity:.06}
 @media (max-width:820px){.mgrid{grid-template-columns:minmax(0,1fr)}}
 .mcw{margin-top:14px}
@@ -273,12 +275,12 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
         <div class="mgl pd">DAILY</div>
         <div class="mgrid pd" id="mdaily"></div>
         <div class="mcw pd" id="mc-d"></div>
-        <p class="note pd"><b>HOW TO READ IT.</b> Today's totals are on each card. The chart shows what you logged each day, or a 7-day average if you use the toggle. On the longer views each point is the average per day for a week or month, not the period total. Shaded columns are weekends.</p>
+        <p class="note pd"><b>HOW TO READ IT.</b> Today's totals are on each card. The chart shows what you logged each day, or a 7-day average if you use the toggle. On the longer views each point is the average per day for a week or month, not the period total. Shaded columns are weekends. A diamond marks your highest day so far.</p>
         <div class="mgl pf">FITNESS BENCHMARKS</div>
         <div class="mgrid pf" id="mfit"></div>
         <div class="mcw pf" id="mc-s"></div>
         <div class="mcw pf" id="mc-e"></div>
-        <p class="note pf"><b>HOW TO READ IT.</b> Each chart plots your best result each day as a percentage of its final target, so 100% means the target is hit. For times it is target divided by your time, so faster scores higher. Use the chips to show or hide lines. Hover or tap a point for its value. Target 1 and target 2 are on each card.</p>
+        <p class="note pf"><b>HOW TO READ IT.</b> Each chart plots your best result each day as a percentage of its final target, so 100% means the target is hit. For times it is target divided by your time, so faster scores higher. A diamond marks a new personal best, meaning better than every earlier result. Use the chips to show or hide lines. Hover or tap a point for its value. Target 1 and target 2 are on each card.</p>
         <div class="sec-h" style="margin-top:18px"><b>METRIC LOG</b><span id="nmet">0 entries</span></div>
         <div id="mlog"></div>
       </section>
@@ -985,7 +987,7 @@ var MDEFS=[
  {k:"k2",g:"f",c:"e",n:"2 km ruck, 25 kg",u:"",f:"t",dir:-1,t:[900,720],ph:"m:ss",mul:60},
  {k:"tsp",g:"f",c:"e",n:"Sprint triathlon",u:"",f:"t",dir:-1,t:[5220,4500,3600],ph:"h:mm:ss",mul:60},
  {k:"tst",g:"f",c:"e",n:"Standard triathlon",u:"",f:"t",dir:-1,t:[9240,8400,7200],ph:"h:mm:ss",mul:60},
- {k:"ftp",g:"f",c:"e",n:"Cycling FTP",u:"W/kg",f:"w",dir:1,t:[4],ph:"W/kg, e.g. 3.6"}
+ {k:"ftp",g:"f",c:"e",n:"Cycling FTP",u:"W/kg",f:"w",dir:1,t:[3,4],ph:"W/kg, e.g. 3.6"}
 ];
 var MBY={};MDEFS.forEach(function(d){MBY[d.k]=d});
 var MR="30";try{var _r=lsGet("mastery-mrange");if(_r==="30"||_r==="365"||_r==="all")MR=_r}catch(e){}
@@ -1061,7 +1063,7 @@ function drawMChart(g){
     var on=vis.indexOf(d.k)>=0,dis=!on&&vis.length>=MC_MAX;
     h+='<button type="button" class="cchip" data-mk="'+d.k+'" aria-pressed="'+on+'"'+(dis?' disabled title="Up to '+MC_MAX+' lines at once. Turn one off first."':'')+(on?' style="--k:var(--s'+(MC.slot[d.k]+1)+')"':'')+'><i></i>'+esc(MSHORT[d.k])+'</button>';
   });
-  h+='</div><div class="mcap">'+(isF?(g==="s"?"STRENGTH":"ENDURANCE")+' · PERCENT OF FINAL TARGET · BEST RESULT EACH DAY · 100% = TARGET HIT (TIMES: TARGET ÷ YOUR TIME)':(rng==="30"?'<span role="group" aria-label="Daily chart mode"><button type="button" class="btn" data-mv="day" aria-pressed="'+dayMode+'">Daily total</button> <button type="button" class="btn" data-mv="avg" aria-pressed="'+!dayMode+'">7-day average</button></span><span>'+(dayMode?'HOURS OR TASKS LOGGED EACH DAY':'AVERAGE PER DAY OVER THE PREVIOUS 7 DAYS')+'</span>':'<span>AVERAGE PER DAY FOR EACH WEEK OR MONTH. A POINT AT 2.5 H MEANS 2.5 H A DAY ON AVERAGE, NOT THE PERIOD TOTAL.</span>'))+'</div>';
+  h+='</div><div class="mcap">'+(isF?(g==="s"?"STRENGTH":"ENDURANCE")+' · PERCENT OF FINAL TARGET · BEST RESULT EACH DAY · 100% = TARGET HIT (TIMES: TARGET ÷ YOUR TIME) · ◆ = NEW PERSONAL BEST':(rng==="30"?'<span role="group" aria-label="Daily chart mode"><button type="button" class="btn" data-mv="day" aria-pressed="'+dayMode+'">Daily total</button> <button type="button" class="btn" data-mv="avg" aria-pressed="'+!dayMode+'">7-day average</button></span><span>'+(dayMode?'HOURS OR TASKS LOGGED EACH DAY · ◆ = RECORD DAY':'AVERAGE PER DAY OVER THE PREVIOUS 7 DAYS')+'</span>':'<span>AVERAGE PER DAY FOR EACH WEEK OR MONTH. A POINT AT 2.5 H MEANS 2.5 H A DAY ON AVERAGE, NOT THE PERIOD TOTAL.</span>'))+'</div>';
   if(rng==="30")h=h.replace(/<\/div>$/,'<span>SHADED = WEEKENDS</span></div>');
   // x range from the visible series
   var first=Infinity;
@@ -1071,15 +1073,15 @@ function drawMChart(g){
   // series
   var S=[];
   vis.forEach(function(k){
-    var d=MBY[k],days=mDays(d),f0=Infinity,pts=[];
+    var d=MBY[k],days=mDays(d),f0=Infinity,pts=[],pbs=(isF||dayMode)?mPb(d,days):{};
     Object.keys(days).forEach(function(s){var n=dnum(s);if(n<f0)f0=n});
     if(f0===Infinity)return;
     if(isF){
       var lt=d.t[d.t.length-1];
-      Object.keys(days).sort().forEach(function(s){var n=dnum(s);if(n<xmin||n>=xmax)return;var v=days[s];pts.push({n:n+0.5,y:(d.dir===1?v/lt:lt/v)*100,tip:dFull(n)+": "+mFmt(d,v)+" ("+Math.round((d.dir===1?v/lt:lt/v)*100)+"% of target)"})});
+      Object.keys(days).sort().forEach(function(s){var n=dnum(s);if(n<xmin||n>=xmax)return;var v=days[s];pts.push({n:n+0.5,y:(d.dir===1?v/lt:lt/v)*100,pb:!!pbs[s],tip:dFull(n)+": "+mFmt(d,v)+" ("+Math.round((d.dir===1?v/lt:lt/v)*100)+"% of target)"+(pbs[s]?" · NEW PERSONAL BEST":"")})});
     }else if(rng==="30"){
       for(var n=Math.max(xmin,f0);n<xmax;n++){
-        if(dayMode){var v1=days[dstr(n)]||0;pts.push({n:n+0.5,y:v1,tip:dFull(n)+": "+mNum(d,v1)+" "+d.u})}
+        if(dayMode){var v1=days[dstr(n)]||0,pk=!!pbs[dstr(n)];pts.push({n:n+0.5,y:v1,pb:pk,tip:dFull(n)+": "+mNum(d,v1)+" "+d.u+(pk?" · NEW RECORD DAY":"")})}
         else{var sm=0;for(var j=0;j<7;j++){var v=days[dstr(n-j)];if(v)sm+=v}pts.push({n:n+0.5,y:sm/7,tip:dFull(n)+": "+mNum(d,sm/7)+" "+d.u+" per day (7-day average)"})}
       }
     }else{
@@ -1112,7 +1114,8 @@ function drawMChart(g){
   S.forEach(function(sr){
     sr.pts.forEach(function(p){
       var big=sr.pts.length<=(isF?40:dayMode?31:12);
-      if(big)s+='<circle class="dot" style="fill:'+sr.col+'" cx="'+X(p.n)+'" cy="'+Y(p.y)+'" r="'+(isF?4:3.5)+'"><title>'+esc(MSHORT[sr.k]+" · "+p.tip)+'</title></circle>';
+      if(p.pb){var px=X(p.n),py=Y(p.y);s+='<path class="pbm" style="fill:'+sr.col+'" d="M'+px+' '+(py-7)+'L'+(px+7)+' '+py+'L'+px+' '+(py+7)+'L'+(px-7)+' '+py+'Z"/>'}
+      else if(big)s+='<circle class="dot" style="fill:'+sr.col+'" cx="'+X(p.n)+'" cy="'+Y(p.y)+'" r="'+(isF?4:3.5)+'"><title>'+esc(MSHORT[sr.k]+" · "+p.tip)+'</title></circle>';
       s+='<circle class="hit" cx="'+X(p.n)+'" cy="'+Y(p.y)+'" r="'+(sr.pts.length>40?4:10)+'"><title>'+esc(MSHORT[sr.k]+" · "+p.tip)+'</title></circle>';
     });
   });
@@ -1125,9 +1128,18 @@ function drawMChart(g){
   });
   box.innerHTML=h+s+'</svg>';
 }
+function mPb(d,days){
+  var out={},best=null;
+  Object.keys(days).sort().forEach(function(k){
+    var v=days[k],better=best!==null&&(d.dir===-1?v<best:v>best);
+    if(better)out[k]=1;
+    if(best===null||better)best=v;
+  });
+  return out;
+}
 function mBig(d,v){return mNum(d,v)+(d.u?'<small>'+esc(d.u)+'</small>':'')}
 function mCard(d,sel,T0){
-  var days=mDays(d),keys=Object.keys(days),h='<div class="mc" data-k="'+d.k+'"><div class="mh"><h3>'+esc(d.n)+'</h3>',m="",extra="";
+  var days=mDays(d),keys=Object.keys(days),pbs=mPb(d,days),pbk=d.g==="d"?sel:keys.slice().sort().pop(),tag=pbs[pbk]?' <span class="pbtag">◆ '+(d.g==="d"?"RECORD DAY":"NEW PB")+'</span>':"",h='<div class="mc" data-k="'+d.k+'"><div class="mh"><h3>'+esc(d.n)+tag+'</h3>',m="",extra="";
   if(d.g==="d"){
     var tv=days[sel]||0,s7=0,s30=0;
     keys.forEach(function(k){var n=dnum(k);if(n>T0-7&&n<=T0)s7+=days[k];if(n>T0-30&&n<=T0)s30+=days[k]});
