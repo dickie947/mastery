@@ -240,9 +240,10 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 .pages button{font:800 12px var(--display);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;padding:12px 16px 9px;cursor:pointer}
 .pages button:hover{background:var(--hover)}
 .pages button[aria-current="page"]{color:var(--fg);border-bottom-color:var(--red)}
-.wrap[data-page="m"] .ps{display:none}
-.wrap[data-page="s"] .pm{display:none}
-.wrap[data-page="m"] .cols{grid-template-columns:minmax(0,1fr)}
+.wrap[data-page="m"] .pf,.wrap[data-page="m"] .ps{display:none}
+.wrap[data-page="f"] .pd,.wrap[data-page="f"] .ps{display:none}
+.wrap[data-page="s"] .pd,.wrap[data-page="s"] .pf,.wrap[data-page="s"] .pdf{display:none}
+.wrap:not([data-page="s"]) .cols{grid-template-columns:minmax(0,1fr)}
 .mgrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
 </style>
 </head>
@@ -261,22 +262,23 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
     </div>
   </header>
 
-  <nav class="pages" aria-label="Pages"><button type="button" data-p="m">Daily metrics</button><button type="button" data-p="s">Skill hours</button></nav>
+  <nav class="pages" aria-label="Pages"><button type="button" data-p="m">Daily metrics</button><button type="button" data-p="f">Fitness metrics</button><button type="button" data-p="s">Skill hours</button></nav>
 
   <div class="cols">
     <main>
-            <section class="grp pm" id="metrics">
+            <section class="grp pdf" id="metrics">
         <div class="sec-h"><b>METRICS</b>
           <span class="mhd"><label for="mday">Logging for</label><input id="mday" type="date"><span role="group" aria-label="Chart range"><button type="button" class="btn" data-r="30" aria-pressed="true">30 days</button> <button type="button" class="btn" data-r="365" aria-pressed="false">1 year</button> <button type="button" class="btn" data-r="all" aria-pressed="false">All time</button></span></span>
         </div>
-        <div class="mgl">DAILY</div>
-        <div class="mgrid" id="mdaily"></div>
-        <div class="mcw" id="mc-d"></div>
-        <div class="mgl">FITNESS BENCHMARKS</div>
-        <div class="mgrid" id="mfit"></div>
-        <div class="mcw" id="mc-s"></div>
-        <div class="mcw" id="mc-e"></div>
-        <p class="note"><b>HOW TO READ IT.</b> Daily counts and hours add up through the day, and the chart shows the average per day (a 7-day average on the 30-day view, weekly or monthly averages on the longer views). The fitness chart shows each lift, run and test as a percentage of its final target, so 100% means the target is hit; for times it is target divided by your time. Use the chips to choose up to 8 lines. Hover or tap a point for its value. Target 1 and target 2 values are on each card.</p>
+        <div class="mgl pd">DAILY</div>
+        <div class="mgrid pd" id="mdaily"></div>
+        <div class="mcw pd" id="mc-d"></div>
+        <p class="note pd"><b>HOW TO READ IT.</b> Today's totals are on each card. The chart shows what you logged each day, or a 7-day average if you use the toggle. On the longer views each point is the average per day for a week or month, not the period total. Shaded columns are weekends.</p>
+        <div class="mgl pf">FITNESS BENCHMARKS</div>
+        <div class="mgrid pf" id="mfit"></div>
+        <div class="mcw pf" id="mc-s"></div>
+        <div class="mcw pf" id="mc-e"></div>
+        <p class="note pf"><b>HOW TO READ IT.</b> Each chart plots your best result each day as a percentage of its final target, so 100% means the target is hit. For times it is target divided by your time, so faster scores higher. Use the chips to show or hide lines. Hover or tap a point for its value. Target 1 and target 2 are on each card.</p>
         <div class="sec-h" style="margin-top:18px"><b>METRIC LOG</b><span id="nmet">0 entries</span></div>
         <div id="mlog"></div>
       </section>
@@ -1156,7 +1158,8 @@ function drawMetrics(){
   box.querySelectorAll(".mc input").forEach(function(i){var k=i.closest(".mc").getAttribute("data-k");if(keep[k])i.value=keep[k];if(k===focus){i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}}});
   drawMChart("d");drawMChart("s");drawMChart("e");
   box.querySelectorAll("button[data-r]").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-r")===MR?"true":"false")});
-  var es=DATA.metrics.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.at||"")<(a.at||"")?-1:1});
+  var pgk=document.querySelector(".wrap").getAttribute("data-page")==="f"?"f":"d";
+  var es=DATA.metrics.filter(function(e){return MBY[e.m].g===pgk}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.at||"")<(a.at||"")?-1:1});
   gid("nmet").textContent=es.length+" entr"+(es.length===1?"y":"ies");
   gid("mlog").innerHTML=es.length?'<ol class="logs">'+es.slice(0,20).map(function(e){
     var d=MBY[e.m];return '<li><span class="d">'+e.date.slice(8)+" "+MONTHS[+e.date.slice(5,7)-1].slice(0,3)+'</span><span class="s">'+esc(d.n)+'</span><span class="h">'+esc(mFmt(d,e.v).toUpperCase())+'</span><button type="button" class="x" data-mdel="'+e.id+'" aria-label="Delete entry">×</button></li>';
@@ -1258,18 +1261,21 @@ document.getElementById("cLoad").addEventListener("click",function(){
   ask({title:"Replace your log?",text:"This replaces everything here with "+d.skills.length+" skills, "+d.logs.length+" sessions and "+d.metrics.length+" metric entries from the text.",ok:"Replace",danger:true},function(){DATA=d;save();toast("Backup loaded.")});
 });
 
-/* ---------- pages: 1 = daily metrics, 2 = skill hours ---------- */
+/* ---------- pages: daily metrics, fitness metrics, skill hours ---------- */
 (function(){
-  var wrap=document.querySelector(".wrap"),btns=document.querySelectorAll(".pages button");
-  function setPage(p,keep){
-    if(p!=="s")p="m";
+  var wrap=document.querySelector(".wrap"),btns=document.querySelectorAll(".pages button"),HASH={m:"daily",f:"fitness",s:"skills"};
+  function setPage(p,keep,redraw){
+    if(p!=="s"&&p!=="f")p="m";
     wrap.setAttribute("data-page",p);
     for(var i=0;i<btns.length;i++){var on=btns[i].getAttribute("data-p")===p;if(on)btns[i].setAttribute("aria-current","page");else btns[i].removeAttribute("aria-current")}
-    if(keep){lsSet("mastery-page",p);try{history.replaceState(null,"","#"+(p==="s"?"skills":"daily"))}catch(e){}}
+    if(keep){lsSet("mastery-page",p);try{history.replaceState(null,"","#"+HASH[p])}catch(e){}}
+    if(redraw)drawMetrics();
   }
-  for(var i=0;i<btns.length;i++)btns[i].addEventListener("click",function(){setPage(this.getAttribute("data-p"),true);window.scrollTo(0,0)});
-  window.addEventListener("hashchange",function(){if(location.hash==="#skills")setPage("s",false);else if(location.hash==="#daily")setPage("m",false)});
-  setPage(location.hash==="#skills"?"s":location.hash==="#daily"?"m":(lsGet("mastery-page")==="s"?"s":"m"),false);
+  function fromHash(){var h=location.hash;return h==="#skills"?"s":h==="#fitness"?"f":h==="#daily"?"m":null}
+  for(var i=0;i<btns.length;i++)btns[i].addEventListener("click",function(){setPage(this.getAttribute("data-p"),true,true);window.scrollTo(0,0)});
+  window.addEventListener("hashchange",function(){var p=fromHash();if(p)setPage(p,false,true)});
+  var saved=lsGet("mastery-page");
+  setPage(fromHash()||(saved==="s"||saved==="f"?saved:"m"),false,false);
 })();
 
 /* ---------- go ---------- */
