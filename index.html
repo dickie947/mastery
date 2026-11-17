@@ -225,6 +225,7 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 .mch .t1{stroke:var(--lv);stroke-width:1;fill:none}
 .mch .t2{stroke:var(--lvm);stroke-width:1;fill:none}
 .mch .hit{fill:transparent}
+.mch .we{fill:var(--fg);opacity:.06}
 @media (max-width:820px){.mgrid{grid-template-columns:minmax(0,1fr)}}
 .mcw{margin-top:14px}
 .mchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
@@ -273,7 +274,8 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
         <div class="mcw" id="mc-d"></div>
         <div class="mgl">FITNESS BENCHMARKS</div>
         <div class="mgrid" id="mfit"></div>
-        <div class="mcw" id="mc-f"></div>
+        <div class="mcw" id="mc-s"></div>
+        <div class="mcw" id="mc-e"></div>
         <p class="note"><b>HOW TO READ IT.</b> Daily counts and hours add up through the day, and the chart shows the average per day (a 7-day average on the 30-day view, weekly or monthly averages on the longer views). The fitness chart shows each lift, run and test as a percentage of its final target, so 100% means the target is hit; for times it is target divided by your time. Use the chips to choose up to 8 lines. Hover or tap a point for its value. Target 1 and target 2 values are on each card.</p>
         <div class="sec-h" style="margin-top:18px"><b>METRIC LOG</b><span id="nmet">0 entries</span></div>
         <div id="mlog"></div>
@@ -965,21 +967,21 @@ function drawChart(){
    DATA.metrics = [{id, m:key, date:"YYYY-MM-DD", v:number, at:ISO}]. Times are stored in seconds.
    g "d": entries add up within a day. g "f": the day's value is the best entry (highest, or lowest where dir is -1). */
 var MDEFS=[
- {k:"adm",g:"d",n:"Admin tasks",u:"tasks",f:"n",q:[1]},
- {k:"dwh",g:"d",n:"Deep work",u:"h",f:"h",q:[0.25,0.5,1,2]},
- {k:"dwt",g:"d",n:"Deep work tasks",u:"tasks",f:"n",q:[1]},
- {k:"std",g:"d",n:"Study",u:"h",f:"h",q:[0.25,0.5,1,2]},
- {k:"pu",g:"f",n:"Press ups",u:"reps",f:"n",dir:1,t:[65],ph:"max reps"},
- {k:"pl",g:"f",n:"Pull ups",u:"reps",f:"n",dir:1,t:[25],ph:"max reps"},
- {k:"pk",g:"f",n:"Plank hold",u:"",f:"t",dir:1,t:[180],ph:"m:ss or seconds",mul:1},
- {k:"dl",g:"f",n:"Deadlift, 5 reps",u:"kg",f:"kg",dir:1,t:[120,200],ph:"kg"},
- {k:"bp",g:"f",n:"Bench press, 5 reps",u:"kg",f:"kg",dir:1,t:[110,135],ph:"kg"},
- {k:"sq",g:"f",n:"Squat, 5 reps",u:"kg",f:"kg",dir:1,t:[120,150],ph:"kg"},
- {k:"fc",g:"f",n:"Farmers carry",u:"kg",f:"kg",dir:1,t:[30,55],ph:"kg"},
- {k:"r5",g:"f",n:"5 km run",u:"",f:"t",dir:-1,t:[1080],ph:"m:ss",mul:60},
- {k:"k4",g:"f",n:"4 km ruck, 40 kg",u:"",f:"t",dir:-1,t:[3000,2100],ph:"m:ss",mul:60},
- {k:"k2",g:"f",n:"2 km ruck, 25 kg",u:"",f:"t",dir:-1,t:[900,720],ph:"m:ss",mul:60},
- {k:"ftp",g:"f",n:"Cycling FTP",u:"W/kg",f:"w",dir:1,t:[4],ph:"W/kg, e.g. 3.6"}
+ {k:"adm",g:"d",c:"d",n:"Admin tasks",u:"tasks",f:"n",q:[1]},
+ {k:"dwh",g:"d",c:"d",n:"Deep work",u:"h",f:"h",q:[0.25,0.5,1,2]},
+ {k:"dwt",g:"d",c:"d",n:"Deep work tasks",u:"tasks",f:"n",q:[1]},
+ {k:"std",g:"d",c:"d",n:"Study",u:"h",f:"h",q:[0.25,0.5,1,2]},
+ {k:"pu",g:"f",c:"s",n:"Press ups",u:"reps",f:"n",dir:1,t:[65],ph:"max reps"},
+ {k:"pl",g:"f",c:"s",n:"Pull ups",u:"reps",f:"n",dir:1,t:[25],ph:"max reps"},
+ {k:"pk",g:"f",c:"s",n:"Plank hold",u:"",f:"t",dir:1,t:[180],ph:"m:ss or seconds",mul:1},
+ {k:"dl",g:"f",c:"s",n:"Deadlift, 5 reps",u:"kg",f:"kg",dir:1,t:[120,200],ph:"kg"},
+ {k:"bp",g:"f",c:"s",n:"Bench press, 5 reps",u:"kg",f:"kg",dir:1,t:[110,135],ph:"kg"},
+ {k:"sq",g:"f",c:"s",n:"Squat, 5 reps",u:"kg",f:"kg",dir:1,t:[120,150],ph:"kg"},
+ {k:"fc",g:"f",c:"s",n:"Farmers carry",u:"kg",f:"kg",dir:1,t:[30,55],ph:"kg"},
+ {k:"r5",g:"f",c:"e",n:"5 km run",u:"",f:"t",dir:-1,t:[1080],ph:"m:ss",mul:60},
+ {k:"k4",g:"f",c:"e",n:"4 km ruck, 40 kg",u:"",f:"t",dir:-1,t:[3000,2100],ph:"m:ss",mul:60},
+ {k:"k2",g:"f",c:"e",n:"2 km ruck, 25 kg",u:"",f:"t",dir:-1,t:[900,720],ph:"m:ss",mul:60},
+ {k:"ftp",g:"f",c:"e",n:"Cycling FTP",u:"W/kg",f:"w",dir:1,t:[4],ph:"W/kg, e.g. 3.6"}
 ];
 var MBY={};MDEFS.forEach(function(d){MBY[d.k]=d});
 var MR="30";try{var _r=lsGet("mastery-mrange");if(_r==="30"||_r==="365"||_r==="all")MR=_r}catch(e){}
@@ -1027,12 +1029,12 @@ function mTicks(lo,hi,n,isT){
 function dShort(n){var d=new Date(n*864e5);return p2(d.getUTCDate())+" "+MONTHS[d.getUTCMonth()].slice(0,3)}
 /* combined charts: one per group. Fitness lines are % of the final target (times: target / time), daily lines are the per-day average. */
 var MSHORT={adm:"Admin tasks",dwh:"Deep work",dwt:"Deep work tasks",std:"Study",pu:"Press ups",pl:"Pull ups",pk:"Plank",dl:"Deadlift",bp:"Bench",sq:"Squat",fc:"Farmers",r5:"5 km run",k4:"4 km ruck",k2:"2 km ruck",ftp:"FTP"};
-var MC={vis:{},slot:{}},MC_MAX=8,MC_W={d:0,f:0};
+var MC={vis:{},slot:{}},MC_MAX=8,MC_W={d:0,s:0,e:0};
 var MDV="day";try{if(lsGet("mastery-mdv")==="avg")MDV="avg"}catch(e){}
 try{var _mc=JSON.parse(lsGet("mastery-mchart")||"{}");if(_mc&&typeof _mc==="object"){if(_mc.vis&&typeof _mc.vis==="object")MC.vis=_mc.vis;if(_mc.slot&&typeof _mc.slot==="object")MC.slot=_mc.slot}}catch(e){}
 function mcSave(){lsSet("mastery-mchart",JSON.stringify(MC))}
 function mcVisible(g){
-  var vis=[];MDEFS.filter(function(d){return d.g===g}).forEach(function(d,i){var on=(d.k in MC.vis)?!!MC.vis[d.k]:i<MC_MAX;if(on&&vis.length<MC_MAX)vis.push(d.k)});
+  var vis=[];MDEFS.filter(function(d){return d.c===g}).forEach(function(d,i){var on=(d.k in MC.vis)?!!MC.vis[d.k]:i<MC_MAX;if(on&&vis.length<MC_MAX)vis.push(d.k)});
   return vis;
 }
 function mcSlots(vis){
@@ -1044,7 +1046,8 @@ function mcSlots(vis){
 function dstr(n){return new Date(n*864e5).toISOString().slice(0,10)}
 function drawMChart(g){
   var box=gid("mc-"+g);if(!box)return;
-  var defs=MDEFS.filter(function(d){return d.g===g}),vis=mcVisible(g),T0=dnum(todayStr()),rng=MR;
+  var isF=g!=="d";
+  var defs=MDEFS.filter(function(d){return d.c===g}),vis=mcVisible(g),T0=dnum(todayStr()),rng=MR;
   mcSlots(vis);
   var dayMode=g==="d"&&rng==="30"&&MDV==="day";
   var W=Math.max(300,Math.round(box.clientWidth)||640),H=W<560?300:340;MC_W[g]=Math.round(box.clientWidth);
@@ -1054,7 +1057,8 @@ function drawMChart(g){
     var on=vis.indexOf(d.k)>=0,dis=!on&&vis.length>=MC_MAX;
     h+='<button type="button" class="cchip" data-mk="'+d.k+'" aria-pressed="'+on+'"'+(dis?' disabled title="Up to '+MC_MAX+' lines at once. Turn one off first."':'')+(on?' style="--k:var(--s'+(MC.slot[d.k]+1)+')"':'')+'><i></i>'+esc(MSHORT[d.k])+'</button>';
   });
-  h+='</div><div class="mcap">'+(g==="f"?'PERCENT OF FINAL TARGET · BEST RESULT EACH DAY · 100% = TARGET HIT (TIMES: TARGET ÷ YOUR TIME)':(rng==="30"?'<span role="group" aria-label="Daily chart mode"><button type="button" class="btn" data-mv="day" aria-pressed="'+dayMode+'">Daily total</button> <button type="button" class="btn" data-mv="avg" aria-pressed="'+!dayMode+'">7-day average</button></span><span>'+(dayMode?'HOURS OR TASKS LOGGED EACH DAY':'AVERAGE PER DAY OVER THE PREVIOUS 7 DAYS')+'</span>':'<span>AVERAGE PER DAY FOR EACH WEEK OR MONTH. A POINT AT 2.5 H MEANS 2.5 H A DAY ON AVERAGE, NOT THE PERIOD TOTAL.</span>'))+'</div>';
+  h+='</div><div class="mcap">'+(isF?(g==="s"?"STRENGTH":"ENDURANCE")+' · PERCENT OF FINAL TARGET · BEST RESULT EACH DAY · 100% = TARGET HIT (TIMES: TARGET ÷ YOUR TIME)':(rng==="30"?'<span role="group" aria-label="Daily chart mode"><button type="button" class="btn" data-mv="day" aria-pressed="'+dayMode+'">Daily total</button> <button type="button" class="btn" data-mv="avg" aria-pressed="'+!dayMode+'">7-day average</button></span><span>'+(dayMode?'HOURS OR TASKS LOGGED EACH DAY':'AVERAGE PER DAY OVER THE PREVIOUS 7 DAYS')+'</span>':'<span>AVERAGE PER DAY FOR EACH WEEK OR MONTH. A POINT AT 2.5 H MEANS 2.5 H A DAY ON AVERAGE, NOT THE PERIOD TOTAL.</span>'))+'</div>';
+  if(rng==="30")h=h.replace(/<\/div>$/,'<span>SHADED = WEEKENDS</span></div>');
   // x range from the visible series
   var first=Infinity;
   vis.forEach(function(k){Object.keys(mDays(MBY[k])).forEach(function(s){var n=dnum(s);if(n<first)first=n})});
@@ -1066,7 +1070,7 @@ function drawMChart(g){
     var d=MBY[k],days=mDays(d),f0=Infinity,pts=[];
     Object.keys(days).forEach(function(s){var n=dnum(s);if(n<f0)f0=n});
     if(f0===Infinity)return;
-    if(g==="f"){
+    if(isF){
       var lt=d.t[d.t.length-1];
       Object.keys(days).sort().forEach(function(s){var n=dnum(s);if(n<xmin||n>=xmax)return;var v=days[s];pts.push({n:n+0.5,y:(d.dir===1?v/lt:lt/v)*100,tip:dFull(n)+": "+mFmt(d,v)+" ("+Math.round((d.dir===1?v/lt:lt/v)*100)+"% of target)"})});
     }else if(rng==="30"){
@@ -1085,14 +1089,15 @@ function drawMChart(g){
   });
   if(!S.length){box.innerHTML=h+'<p class="empty">'+(vis.length?"No entries in this range yet.":"Turn on at least one metric above.")+'</p>';return}
   var mx=0;S.forEach(function(s){s.pts.forEach(function(p){if(p.y>mx)mx=p.y})});
-  var hi=g==="f"?Math.max(110,mx*1.06):mx*1.1||1,ticks=mTicks(0,hi,4,false);hi=Math.max(ticks[ticks.length-1]||0,hi);
-  var wide=W>=560,lab=S.map(function(s){var last=s.pts[s.pts.length-1];return MSHORT[s.k]+(wide?" "+(g==="f"?Math.round(last.y)+"%":mNum(s.d,last.y)):"")});
+  var hi=isF?Math.max(110,mx*1.06):mx*1.1||1,ticks=mTicks(0,hi,4,false);hi=Math.max(ticks[ticks.length-1]||0,hi);
+  var wide=W>=560,lab=S.map(function(s){var last=s.pts[s.pts.length-1];return MSHORT[s.k]+(wide?" "+(isF?Math.round(last.y)+"%":mNum(s.d,last.y)):"")});
   var longest=0;lab.forEach(function(t){if(t.length>longest)longest=t.length});
   var L=34,R=Math.min(wide?150:104,Math.max(56,Math.round(longest*5.9+16))),TP=12,B=24,pw=W-L-R,ph=H-TP-B;
   var X=function(n){return L+(n-xmin)/(xmax-xmin)*pw},Y=function(v){return TP+(1-v/hi)*ph};
-  var s='<svg class="mch" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc((g==="f"?"Fitness progress as percent of target":"Daily averages")+" for "+S.length+" metric"+(S.length===1?"":"s")+". The metric log below lists every entry.")+'">';
-  ticks.forEach(function(v){var y=Y(v);s+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text class="tx" x="'+(L-5)+'" y="'+(y+3)+'" text-anchor="end">'+esc(g==="f"?v+"%":String(v))+'</text>'});
-  if(g==="f"){var y1=Y(100);s+='<line class="t2" x1="'+L+'" x2="'+(W-R)+'" y1="'+y1+'" y2="'+y1+'"/><text class="tx em" x="'+(L+3)+'" y="'+(y1-4)+'">TARGET</text>'}
+  var s='<svg class="mch" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc((isF?"Fitness progress as percent of target":"Daily averages")+" for "+S.length+" metric"+(S.length===1?"":"s")+". The metric log below lists every entry.")+'">';
+  if(rng==="30"){for(var wn=Math.ceil(xmin);wn<xmax;wn++){var wd=new Date(wn*864e5).getUTCDay();if(wd===0||wd===6)s+='<rect class="we" x="'+X(wn)+'" y="'+TP+'" width="'+(X(wn+1)-X(wn))+'" height="'+ph+'"/>'}}
+  ticks.forEach(function(v){var y=Y(v);s+='<line class="gl" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text class="tx" x="'+(L-5)+'" y="'+(y+3)+'" text-anchor="end">'+esc(isF?v+"%":String(v))+'</text>'});
+  if(isF){var y1=Y(100);s+='<line class="t2" x1="'+L+'" x2="'+(W-R)+'" y1="'+y1+'" y2="'+y1+'"/><text class="tx em" x="'+(L+3)+'" y="'+(y1-4)+'">TARGET</text>'}
   var xt=[];
   if(rng==="30"){for(var n2=T0;n2>=xmin;n2-=7)xt.push([n2+0.5,dShort(n2)])}else chTicks(xmin,xmax,W-R+L).forEach(function(t){xt.push([t[0],t[1]])});
   var lastX=-99;xt.sort(function(a,b){return a[0]-b[0]}).forEach(function(t){var x=X(t[0]);if(x-lastX>=44&&x>=L&&x<=W-R+4){s+='<line class="gl" x1="'+x+'" x2="'+x+'" y1="'+(TP+ph)+'" y2="'+(TP+ph+4)+'"/><text class="tx" x="'+x+'" y="'+(H-6)+'" text-anchor="'+(x>W-R-20?"end":"middle")+'">'+esc(t[1])+'</text>';lastX=x}});
@@ -1102,8 +1107,8 @@ function drawMChart(g){
   });
   S.forEach(function(sr){
     sr.pts.forEach(function(p){
-      var big=sr.pts.length<=(g==="f"?40:dayMode?31:12);
-      if(big)s+='<circle class="dot" style="fill:'+sr.col+'" cx="'+X(p.n)+'" cy="'+Y(p.y)+'" r="'+(g==="f"?4:3.5)+'"><title>'+esc(MSHORT[sr.k]+" · "+p.tip)+'</title></circle>';
+      var big=sr.pts.length<=(isF?40:dayMode?31:12);
+      if(big)s+='<circle class="dot" style="fill:'+sr.col+'" cx="'+X(p.n)+'" cy="'+Y(p.y)+'" r="'+(isF?4:3.5)+'"><title>'+esc(MSHORT[sr.k]+" · "+p.tip)+'</title></circle>';
       s+='<circle class="hit" cx="'+X(p.n)+'" cy="'+Y(p.y)+'" r="'+(sr.pts.length>40?4:10)+'"><title>'+esc(MSHORT[sr.k]+" · "+p.tip)+'</title></circle>';
     });
   });
@@ -1149,7 +1154,7 @@ function drawMetrics(){
   gid("mdaily").innerHTML=MDEFS.filter(function(d){return d.g==="d"}).map(function(d){return mCard(d,sel,T0)}).join("");
   gid("mfit").innerHTML=MDEFS.filter(function(d){return d.g==="f"}).map(function(d){return mCard(d,sel,T0)}).join("");
   box.querySelectorAll(".mc input").forEach(function(i){var k=i.closest(".mc").getAttribute("data-k");if(keep[k])i.value=keep[k];if(k===focus){i.focus();try{i.setSelectionRange(i.value.length,i.value.length)}catch(e){}}});
-  drawMChart("d");drawMChart("f");
+  drawMChart("d");drawMChart("s");drawMChart("e");
   box.querySelectorAll("button[data-r]").forEach(function(b){b.setAttribute("aria-pressed",b.getAttribute("data-r")===MR?"true":"false")});
   var es=DATA.metrics.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.at||"")<(a.at||"")?-1:1});
   gid("nmet").textContent=es.length+" entr"+(es.length===1?"y":"ies");
@@ -1162,7 +1167,7 @@ function undoMetric(k){
   if(!last){toast("Nothing to undo for "+MBY[k].n+".");return}
   DATA.metrics=DATA.metrics.filter(function(e){return e.id!==last.id});save();toast("Removed "+MBY[k].n+": "+mFmt(MBY[k],last.v)+" on "+dShort(dnum(last.date))+".");
 }
-if(window.ResizeObserver){["d","f"].forEach(function(g){new ResizeObserver(function(){var w=gid("mc-"+g);if(w&&Math.round(w.clientWidth)!==MC_W[g])drawMChart(g)}).observe(gid("mc-"+g))})}
+if(window.ResizeObserver){["d","s","e"].forEach(function(g){new ResizeObserver(function(){var w=gid("mc-"+g);if(w&&Math.round(w.clientWidth)!==MC_W[g])drawMChart(g)}).observe(gid("mc-"+g))})}
 gid("mday").value=todayStr();
 gid("mday").addEventListener("change",function(){drawMetrics()});
 gid("metrics").addEventListener("click",function(e){
@@ -1171,8 +1176,8 @@ gid("metrics").addEventListener("click",function(e){
   var del=b.getAttribute("data-mdel");if(del){DATA.metrics=DATA.metrics.filter(function(x){return x.id!==del});save();toast("Entry removed.");return}
   var mv=b.getAttribute("data-mv");if(mv){MDV=mv==="avg"?"avg":"day";lsSet("mastery-mdv",MDV);drawMChart("d");return}
   var mk=b.getAttribute("data-mk");
-  if(mk){var g=MBY[mk].g,vis=mcVisible(g),on=vis.indexOf(mk)>=0;if(!on&&vis.length>=MC_MAX){toast("Up to "+MC_MAX+" lines at once. Turn one off first.");return}
-    MDEFS.filter(function(d){return d.g===g}).forEach(function(d){MC.vis[d.k]=vis.indexOf(d.k)>=0});MC.vis[mk]=!on;mcSave();drawMChart(g);return}
+  if(mk){var g=MBY[mk].c,vis=mcVisible(g),on=vis.indexOf(mk)>=0;if(!on&&vis.length>=MC_MAX){toast("Up to "+MC_MAX+" lines at once. Turn one off first.");return}
+    MDEFS.filter(function(d){return d.c===g}).forEach(function(d){MC.vis[d.k]=vis.indexOf(d.k)>=0});MC.vis[mk]=!on;mcSave();drawMChart(g);return}
   var card=b.closest(".mc");if(!card)return;
   var k=card.getAttribute("data-k"),d=MBY[k],a=b.getAttribute("data-a");
   if(a==="madd")addMetric(k,+b.getAttribute("data-v"));
