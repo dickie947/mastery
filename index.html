@@ -370,7 +370,7 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
     <label for="dqS" id="dqSL" hidden>Starting level</label>
     <select class="q" id="dqS" hidden></select>
     <p id="dqSN" hidden></p>
-    <label class="chk" id="dqNL" hidden><input type="checkbox" id="dqN"> Narrow skill · tops out at Competent after 20 h</label>
+    <label class="chk" id="dqNL" hidden><input type="checkbox" id="dqN"> Specific skill · tops out at Achieved after 20 h</label>
     <div class="bar2"><button type="button" class="btn" id="dqOk">OK</button><button type="button" class="btn" id="dqNo">Cancel</button></div>
   </div>
 </dialog>
@@ -382,8 +382,8 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 /* Deliberate hours in one field. Competent is about a degree plus a few working years; the steps above it follow Nightingale's 3, 5 and 7 years at 1 h/day. Top 25% sits at 75% of World Class. Edit freely. */
 var LEVELS=[[0,"Beginner"],[1000,"Competent"],[2100,"Top of Field"],[2700,"Top 25%"],[2800,"National Authority"],[3600,"World Class"]];
 var TARGET=LEVELS[LEVELS.length-1][0];
-/* narrow skills: a small, specific skill whose ladder tops out at Competent after 20 h */
-var NLEVELS=[[0,"Beginner"],[20,"Competent"]], NTARGET=20;
+/* specific skills: a small, narrow skill whose ladder tops out at Achieved after 20 h */
+var NLEVELS=[[0,"Beginner"],[20,"Achieved"]], NTARGET=20;
 function ladder(s){return s&&s.narrow?NLEVELS:LEVELS}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function p2(n){return (n<10?"0":"")+n}
@@ -662,15 +662,15 @@ function skillHTML(s,T,top,idx){
     '<button type="button" class="tw" data-a="tw" aria-label="Expand or collapse"'+(ch.length?'':' disabled')+'>'+(ch.length?(open?'▾':'▸'):'·')+'</button>'+
     '<div><div class="head"><span class="ttl"><button type="button" class="nm" data-a="sel">'+(top?(idx+1)+'. ':'')+esc(s.name)+'</button><span class="lv'+(L.i===0?' l0':L.i===L.last?' lm':'')+'">'+esc(L.cur)+'</span></span><span class="pct">'+fmt(pct,pct<10?2:1)+'%'+'</span></div>'+
     '<div class="pb '+cls+'" role="progressbar" aria-valuemin="0" aria-valuemax="'+tg+'" aria-valuenow="'+Math.round(h)+'"><i style="width:'+pct+'%"></i></div>'+
-    '<div class="m"><b>'+fmt(h,1)+'</b> / '+fmt(tg)+' H'+(s.narrow?' · NARROW SKILL':'')+(ch.length?' · own '+fmt(own,1)+' H · '+ch.length+' sub-skill'+(ch.length>1?'s':''):'')+(L.next?' · NEXT: '+esc(L.next[1].toUpperCase())+' IN '+fmt(L.next[0]-h,1)+' H':'')+(eta?' · '+eta:'')+'</div>'+
-    '<div class="acts"><button type="button" class="btn" data-a="log">Log</button><button type="button" class="btn" data-a="sub">+ Sub-skill</button><button type="button" class="btn" data-a="ren">Rename</button><button type="button" class="btn" data-a="nar">'+(s.narrow?"Make broad":"Make narrow")+'</button>'+(top?'<button type="button" class="btn" data-a="mv">'+(s.group==="sup"?"To Core":"To Supporting")+'</button>':'')+'<button type="button" class="btn del" data-a="del">Delete</button></div>'+
+    '<div class="m"><b>'+fmt(h,1)+'</b> / '+fmt(tg)+' H'+(s.narrow?' · SPECIFIC SKILL':'')+(ch.length?' · own '+fmt(own,1)+' H · '+ch.length+' sub-skill'+(ch.length>1?'s':''):'')+(L.next?' · NEXT: '+esc(L.next[1].toUpperCase())+' IN '+fmt(L.next[0]-h,1)+' H':'')+(eta?' · '+eta:'')+'</div>'+
+    '<div class="acts"><button type="button" class="btn" data-a="log">Log</button><button type="button" class="btn" data-a="sub">+ Sub-skill</button><button type="button" class="btn" data-a="ren">Rename</button><button type="button" class="btn" data-a="nar">'+(s.narrow?"Make general":"Make specific")+'</button>'+(top?'<button type="button" class="btn" data-a="mv">'+(s.group==="sup"?"To Core":"To Supporting")+'</button>':'')+'<button type="button" class="btn del" data-a="del">Delete</button></div>'+
     '</div></div>';
   if(ch.length&&open)out+='<ol>'+ch.map(function(k){return skillHTML(k,T,false,0)}).join("")+'</ol>';
   return out+'</li>';
 }
 function flatList(pid,depth,out){kids(pid).forEach(function(s){out.push([s,depth]);flatList(s.id,depth+1,out)});return out}
 function render(){
-  document.getElementById("lvnote").innerHTML="<b>TITLES.</b> "+LEVELS.map(function(l){return esc(l[1])+" "+fmt(l[0])+" h"}).join(" · ")+". Hours are deliberate practice in one field. <b>NARROW SKILLS</b> (set per skill) top out at Competent · 20 h.";
+  document.getElementById("lvnote").innerHTML="<b>TITLES.</b> "+LEVELS.map(function(l){return esc(l[1])+" "+fmt(l[0])+" h"}).join(" · ")+". Hours are deliberate practice in one field. <b>SPECIFIC SKILLS</b> (set per skill) top out at Achieved · 20 h.";
   var T=totals(), M=byId(), tops=kids(null);
   document.getElementById("tree").innerHTML=GROUPS.map(function(g){
     var ts=tops.filter(function(x){return (x.group==="sup"?"sup":"pro")===g[0]}), n=0;
@@ -807,7 +807,7 @@ function chBuildTable(vis,data,M,T0){
     tr.appendChild(htmlEl("td",null,D&&D.rate>0?fmt(D.rate*7,1)+" H/WK":"–"));
     LEVELS.slice(1).forEach(function(l){
       var td=htmlEl("td");
-      if(D&&D.narrow){td.textContent="–";td.title="Narrow skill: tops out at "+NTARGET+" h"}
+      if(D&&D.narrow){td.textContent="–";td.title="Specific skill: tops out at "+NTARGET+" h"}
       else if(D&&D.total>=l[0]){td.textContent="REACHED";td.className="ok"}
       else if(D&&D.rate>0){var d=T0+(l[0]-D.total)/D.rate;td.textContent=(d-T0)/365.25>100?">100 YRS":dMon(d)}
       else td.textContent="–";
