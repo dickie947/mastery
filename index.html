@@ -247,6 +247,7 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 .wrap[data-page="s"] .pd,.wrap[data-page="s"] .pf,.wrap[data-page="s"] .pdf{display:none}
 .wrap:not([data-page="s"]) .cols{grid-template-columns:minmax(0,1fr)}
 .mgrid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.chk{display:flex;gap:8px;align-items:center;margin:12px 0 0;font-size:12px;cursor:pointer}.chk input{width:auto;margin:0}
 </style>
 </head>
 <body>
@@ -369,6 +370,7 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
     <label for="dqS" id="dqSL" hidden>Starting level</label>
     <select class="q" id="dqS" hidden></select>
     <p id="dqSN" hidden></p>
+    <label class="chk" id="dqNL" hidden><input type="checkbox" id="dqN"> Narrow skill · tops out at Competent after 20 h</label>
     <div class="bar2"><button type="button" class="btn" id="dqOk">OK</button><button type="button" class="btn" id="dqNo">Cancel</button></div>
   </div>
 </dialog>
@@ -380,6 +382,9 @@ dialog input.q{width:100%;margin-top:8px;background:var(--bg);color:var(--fg);bo
 /* Deliberate hours in one field. Competent is about a degree plus a few working years; the steps above it follow Nightingale's 3, 5 and 7 years at 1 h/day. Top 25% sits at 75% of World Class. Edit freely. */
 var LEVELS=[[0,"Beginner"],[1000,"Competent"],[2100,"Top of Field"],[2700,"Top 25%"],[2800,"National Authority"],[3600,"World Class"]];
 var TARGET=LEVELS[LEVELS.length-1][0];
+/* narrow skills: a small, specific skill whose ladder tops out at Competent after 20 h */
+var NLEVELS=[[0,"Beginner"],[20,"Competent"]], NTARGET=20;
+function ladder(s){return s&&s.narrow?NLEVELS:LEVELS}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
 function p2(n){return (n<10?"0":"")+n}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
@@ -422,7 +427,7 @@ function clean(d){
   if(!d||typeof d!=="object") return out;
   var ids={};
   (Array.isArray(d.skills)?d.skills:[]).forEach(function(s){
-    if(s&&s.id&&s.name&&!ids[s.id]){ids[s.id]=1;out.skills.push({id:String(s.id),name:String(s.name).slice(0,60),parent:s.parent?String(s.parent):null,group:s.group==="sup"?"sup":"pro",target:TARGET})}
+    if(s&&s.id&&s.name&&!ids[s.id]){ids[s.id]=1;out.skills.push({id:String(s.id),name:String(s.name).slice(0,60),parent:s.parent?String(s.parent):null,group:s.group==="sup"?"sup":"pro",narrow:s.narrow===true?true:undefined,target:s.narrow===true?NTARGET:TARGET})}
   });
   out.skills.forEach(function(s){if(s.parent&&!ids[s.parent])s.parent=null});
   (Array.isArray(d.logs)?d.logs:[]).forEach(function(l){
@@ -553,13 +558,15 @@ function ask(o,cb){
   i.hidden=!o.input;i.value=o.value||"";ok.textContent=o.ok||"OK";ok.className="btn"+(o.danger?" danger":"");
   var sel=document.getElementById("dqS"),sl=document.getElementById("dqSL"),sn=document.getElementById("dqSN");
   sel.hidden=sl.hidden=sn.hidden=!o.levels;
+  var nl=document.getElementById("dqNL"),nc=document.getElementById("dqN");nl.hidden=!o.levels;nc.checked=false;
   if(o.levels){
-    sel.innerHTML=LEVELS.map(function(l,k){return '<option value="'+k+'">'+esc(l[1])+(l[0]?' · '+fmt(l[0])+' h already logged':' · start from zero')+'</option>'}).join("");
+    var fill=function(){var lad=nc.checked?NLEVELS:LEVELS;sel.innerHTML=lad.map(function(l,k){return '<option value="'+k+'">'+esc(l[1])+(l[0]?' · '+fmt(l[0])+' h already logged':' · start from zero')+'</option>'}).join("")};
+    nc.onchange=fill;fill();
     sn.textContent="Choosing a level adds its hours as an opening baseline. Only pick one you have genuinely reached through deliberate practice.";
   }
   dqCb=cb;openDlg(dq);if(o.input)setTimeout(function(){i.focus();i.select()},50);
 }
-function dqDone(yes){var cb=dqCb;dqCb=null;closeDlg(dq);if(yes&&cb)cb(document.getElementById("dqI").value,+document.getElementById("dqS").value||0)}
+function dqDone(yes){var cb=dqCb;dqCb=null;closeDlg(dq);if(yes&&cb)cb(document.getElementById("dqI").value,+document.getElementById("dqS").value||0,document.getElementById("dqN").checked)}
 document.getElementById("dqOk").addEventListener("click",function(){dqDone(true)});
 document.getElementById("dqNo").addEventListener("click",function(){dqDone(false)});
 document.getElementById("dqI").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();dqDone(true)}});
@@ -567,11 +574,13 @@ document.getElementById("dqI").addEventListener("keydown",function(e){if(e.key==
 /* ---------- actions ---------- */
 function cleanName(s){return (s||"").replace(/\s+/g," ").trim().slice(0,60)}
 function addSkill(parent,grp){
-  ask({title:parent?"New sub-skill":"New skill",text:parent?"It counts toward its parent skill too.":"Name the skill you want to build.",input:true,levels:true,ok:"Add"},function(v,lv){
+  ask({title:parent?"New sub-skill":"New skill",text:parent?"It counts toward its parent skill too.":"Name the skill you want to build.",input:true,levels:true,ok:"Add"},function(v,lv,nar){
     var n=cleanName(v); if(!n)return;
-    var s={id:uid(),name:n,parent:parent||null,group:grp==="sup"?"sup":"pro",target:TARGET};
+    var s={id:uid(),name:n,parent:parent||null,group:grp==="sup"?"sup":"pro",target:nar?NTARGET:TARGET};
+    if(nar)s.narrow=true;
+    var lad=nar?NLEVELS:LEVELS;
     DATA.skills.push(s);
-    if(lv>0&&LEVELS[lv])DATA.logs.push({id:uid(),skill:s.id,date:todayStr(),hours:LEVELS[lv][0],note:"Starting baseline: "+LEVELS[lv][1],at:new Date().toISOString(),base:true});
+    if(lv>0&&lad[lv])DATA.logs.push({id:uid(),skill:s.id,date:todayStr(),hours:lad[lv][0],note:"Starting baseline: "+lad[lv][1],at:new Date().toISOString(),base:true});
     if(parent)OPEN[parent]=true; SEL=s.id; lsSet("mastery-sel",SEL); lsSet("mastery-open",JSON.stringify(OPEN));
     save();
   });
@@ -644,24 +653,24 @@ function etaText(hours,recent,target){
   if(yrs>100)return s+" · OVER 100 YRS";
   return s+" · ~"+(yrs<1?Math.max(1,Math.round(weeks))+" WKS":fmt(yrs,1)+" YRS")+" ("+new Date(Date.now()+weeks*7*864e5).getFullYear()+")";
 }
-function levelOf(h){var i=0;for(var k=0;k<LEVELS.length;k++){if(h>=LEVELS[k][0])i=k}return {i:i,cur:LEVELS[i][1],next:LEVELS[i+1]||null}}
+function levelOf(h,lad){lad=lad||LEVELS;var i=0;for(var k=0;k<lad.length;k++){if(h>=lad[k][0])i=k}return {i:i,cur:lad[i][1],next:lad[i+1]||null,last:lad.length-1}}
 function skillHTML(s,T,top,idx){
-  var h=T.all[s.id], own=T.own[s.id], tg=TARGET, pct=Math.min(100,h/tg*100);
-  var L=levelOf(h), ch=kids(s.id), open=OPEN[s.id]!==false, eta=etaText(h,T.recent[s.id],tg);
+  var h=T.all[s.id], own=T.own[s.id], tg=s.narrow?NTARGET:TARGET, pct=Math.min(100,h/tg*100);
+  var L=levelOf(h,ladder(s)), ch=kids(s.id), open=OPEN[s.id]!==false, eta=etaText(h,T.recent[s.id],tg);
   var cls=pct>=100?"full":pct>=50?"half":"";
   var out='<li><div class="sk'+(top?' top':'')+(SEL===s.id?' sel':'')+'" data-id="'+s.id+'">'+
     '<button type="button" class="tw" data-a="tw" aria-label="Expand or collapse"'+(ch.length?'':' disabled')+'>'+(ch.length?(open?'▾':'▸'):'·')+'</button>'+
-    '<div><div class="head"><span class="ttl"><button type="button" class="nm" data-a="sel">'+(top?(idx+1)+'. ':'')+esc(s.name)+'</button><span class="lv'+(L.i===0?' l0':L.i===LEVELS.length-1?' lm':'')+'">'+esc(L.cur)+'</span></span><span class="pct">'+fmt(pct,pct<10?2:1)+'%'+'</span></div>'+
+    '<div><div class="head"><span class="ttl"><button type="button" class="nm" data-a="sel">'+(top?(idx+1)+'. ':'')+esc(s.name)+'</button><span class="lv'+(L.i===0?' l0':L.i===L.last?' lm':'')+'">'+esc(L.cur)+'</span></span><span class="pct">'+fmt(pct,pct<10?2:1)+'%'+'</span></div>'+
     '<div class="pb '+cls+'" role="progressbar" aria-valuemin="0" aria-valuemax="'+tg+'" aria-valuenow="'+Math.round(h)+'"><i style="width:'+pct+'%"></i></div>'+
-    '<div class="m"><b>'+fmt(h,1)+'</b> / '+fmt(tg)+' H'+(ch.length?' · own '+fmt(own,1)+' H · '+ch.length+' sub-skill'+(ch.length>1?'s':''):'')+(L.next?' · NEXT: '+esc(L.next[1].toUpperCase())+' IN '+fmt(L.next[0]-h,1)+' H':'')+(eta?' · '+eta:'')+'</div>'+
-    '<div class="acts"><button type="button" class="btn" data-a="log">Log</button><button type="button" class="btn" data-a="sub">+ Sub-skill</button><button type="button" class="btn" data-a="ren">Rename</button>'+(top?'<button type="button" class="btn" data-a="mv">'+(s.group==="sup"?"To Core":"To Supporting")+'</button>':'')+'<button type="button" class="btn del" data-a="del">Delete</button></div>'+
+    '<div class="m"><b>'+fmt(h,1)+'</b> / '+fmt(tg)+' H'+(s.narrow?' · NARROW SKILL':'')+(ch.length?' · own '+fmt(own,1)+' H · '+ch.length+' sub-skill'+(ch.length>1?'s':''):'')+(L.next?' · NEXT: '+esc(L.next[1].toUpperCase())+' IN '+fmt(L.next[0]-h,1)+' H':'')+(eta?' · '+eta:'')+'</div>'+
+    '<div class="acts"><button type="button" class="btn" data-a="log">Log</button><button type="button" class="btn" data-a="sub">+ Sub-skill</button><button type="button" class="btn" data-a="ren">Rename</button><button type="button" class="btn" data-a="nar">'+(s.narrow?"Make broad":"Make narrow")+'</button>'+(top?'<button type="button" class="btn" data-a="mv">'+(s.group==="sup"?"To Core":"To Supporting")+'</button>':'')+'<button type="button" class="btn del" data-a="del">Delete</button></div>'+
     '</div></div>';
   if(ch.length&&open)out+='<ol>'+ch.map(function(k){return skillHTML(k,T,false,0)}).join("")+'</ol>';
   return out+'</li>';
 }
 function flatList(pid,depth,out){kids(pid).forEach(function(s){out.push([s,depth]);flatList(s.id,depth+1,out)});return out}
 function render(){
-  document.getElementById("lvnote").innerHTML="<b>TITLES.</b> "+LEVELS.map(function(l){return esc(l[1])+" "+fmt(l[0])+" h"}).join(" · ")+". Hours are deliberate practice in one field.";
+  document.getElementById("lvnote").innerHTML="<b>TITLES.</b> "+LEVELS.map(function(l){return esc(l[1])+" "+fmt(l[0])+" h"}).join(" · ")+". Hours are deliberate practice in one field. <b>NARROW SKILLS</b> (set per skill) top out at Competent · 20 h.";
   var T=totals(), M=byId(), tops=kids(null);
   document.getElementById("tree").innerHTML=GROUPS.map(function(g){
     var ts=tops.filter(function(x){return (x.group==="sup"?"sup":"pro")===g[0]}), n=0;
@@ -729,7 +738,7 @@ function chOrder(){
 }
 function chVisible(order){
   var vis=[];
-  order.forEach(function(r){var id=r[0].id,on=(id in CH.vis)?!!CH.vis[id]:r[1]===0;if(on&&vis.length<CH_MAX)vis.push(id)});
+  order.forEach(function(r){var id=r[0].id,on=(id in CH.vis)?!!CH.vis[id]:r[1]===0&&!r[0].narrow;if(on&&vis.length<CH_MAX)vis.push(id)});
   return vis;
 }
 /* colour follows the skill: each keeps its slot, and only moves if two visible skills collide */
@@ -748,11 +757,12 @@ function chData(id,T0){
   L.forEach(function(l){cum+=l.h;if(!l.b){rh+=l.h;if(first===null)first=l.d}var p=pts[pts.length-1];if(p&&p.d===l.d)p.h=cum;else pts.push({d:l.d,h:cum})});
   /* pace: logged hours (baselines excluded) over the days since first real practice, never less than a 28-day window */
   var rate=first===null?0:rh/Math.max(28,T0-first+1);
-  return {pts:pts,total:cum,start:pts[0].d,rate:rate};
+  var sk=byId()[id];
+  return {pts:pts,total:cum,start:pts[0].d,rate:rate,narrow:!!(sk&&sk.narrow),target:sk&&sk.narrow?NTARGET:TARGET};
 }
 function chAt(D,d,T0){
   if(!D)return null;
-  if(d>T0)return Math.max(D.total,Math.min(TARGET,D.total+D.rate*(d-T0)));
+  if(d>T0)return Math.max(D.total,Math.min(D.target,D.total+D.rate*(d-T0)));
   if(d<D.start)return null;
   var v=null;for(var i=0;i<D.pts.length;i++){if(D.pts[i].d<=d)v=D.pts[i].h;else break}
   return v;
@@ -793,11 +803,12 @@ function chBuildTable(vis,data,M,T0){
     var D=data[id],s=M[id],tr=htmlEl("tr"),c=htmlEl("td");
     var k=htmlEl("i","key");k.style.setProperty("--k","var(--s"+(CH.slot[id]+1)+")");c.appendChild(k);
     c.appendChild(document.createTextNode(s.parent&&M[s.parent]?M[s.parent].name+" › "+s.name:s.name));tr.appendChild(c);
-    tr.appendChild(htmlEl("td",null,D?fmt(D.total,1):"–"));
+    tr.appendChild(htmlEl("td",null,D?fmt(D.total,1)+(D.narrow?" / "+NTARGET:""):"–"));
     tr.appendChild(htmlEl("td",null,D&&D.rate>0?fmt(D.rate*7,1)+" H/WK":"–"));
     LEVELS.slice(1).forEach(function(l){
       var td=htmlEl("td");
-      if(D&&D.total>=l[0]){td.textContent="REACHED";td.className="ok"}
+      if(D&&D.narrow){td.textContent="–";td.title="Narrow skill: tops out at "+NTARGET+" h"}
+      else if(D&&D.total>=l[0]){td.textContent="REACHED";td.className="ok"}
       else if(D&&D.rate>0){var d=T0+(l[0]-D.total)/D.rate;td.textContent=(d-T0)/365.25>100?">100 YRS":dMon(d)}
       else td.textContent="–";
       tr.appendChild(td);
@@ -895,8 +906,8 @@ function drawChart(){
     d+=" H"+X(T0);
     P(svgEl("path",{d:d,"class":"ln",style:"stroke:"+col}));
     var ex=X(T0),ey=Y(D.total);
-    if(D.rate>0&&D.total<TARGET){
-      var dEnd=Math.min(xmax,T0+(TARGET-D.total)/D.rate),yEnd=D.total+D.rate*(dEnd-T0);
+    if(D.rate>0&&D.total<D.target){
+      var dEnd=Math.min(xmax,T0+(D.target-D.total)/D.rate),yEnd=D.total+D.rate*(dEnd-T0);
       P(svgEl("path",{d:"M"+X(T0)+" "+Y(D.total)+" L"+X(dEnd)+" "+Y(yEnd),"class":"ln dsh",style:"stroke:"+col}));
       ex=X(dEnd);ey=Y(yEnd);
     }
@@ -904,7 +915,7 @@ function drawChart(){
   });
   ids.forEach(function(id){
     var D=data[id],col="var(--s"+(CH.slot[id]+1)+")";
-    if(!(D.rate>0))return;
+    if(!(D.rate>0)||D.narrow)return;
     LEVELS.forEach(function(lv,i){
       if(!i||lv[0]<=D.total)return;
       var d=T0+(lv[0]-D.total)/D.rate;if(d>xmax+0.5)return;
@@ -1221,6 +1232,7 @@ document.getElementById("tree").addEventListener("click",function(e){
   else if(a==="sub")addSkill(id);
   else if(a==="ren")renameSkill(id);
   else if(a==="mv"){var sk=byId()[id];if(sk){sk.group=sk.group==="sup"?"pro":"sup";save()}}
+  else if(a==="nar"){var ns=byId()[id];if(ns){ns.narrow=ns.narrow?undefined:true;ns.target=ns.narrow?NTARGET:TARGET;save()}}
   else if(a==="del")deleteSkill(id);
 });
 document.getElementById("recent").addEventListener("click",function(e){var b=e.target.closest("button[data-del]");if(b)deleteLog(b.getAttribute("data-del"))});

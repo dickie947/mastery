@@ -4,6 +4,8 @@ Personal deliberate-practice tracker. Static site; your log lives in `data/maste
 
 Levels (deliberate hours in one field): Beginner 0, Competent 1,000, Top of Field 2,100, National Authority 2,800, World Class 3,600. Edit the `LEVELS` list in `index.html` to change them.
 
+Narrow skills: any skill can be set to "narrow" (tick the box when adding, or use Make narrow / Make broad). A narrow skill tops out at Competent after 20 hours, for small specific skills such as budgeting. Its hours still count toward its parent. Edit `NLEVELS` in `index.html` to change it.
+
 ## Deploy
 1. Create a GitHub repo and upload these files.
 2. Settings > Pages > deploy from the `main` branch, root folder.
